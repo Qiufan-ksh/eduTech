@@ -1,0 +1,9 @@
+﻿<SectionContent SectionName="Toolbar">
+	<div class="flex gap-3 sticky top-16 lg:top-23">
+		@ChildContent
+	</div>
+</SectionContent>
+
+@code {
+	[Parameter] public RenderFragment ChildContent { get; set; } = null!;
+}

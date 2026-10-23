@@ -1,0 +1,129 @@
+@using BookHeaven.Core.Abstractions
+@using BookHeaven.Core.Features.BookSeries
+@attribute [Route(Urls.Series)]
+<PageTitle>@Translations.SERIES_PLURAL</PageTitle>
+
+<Container>
+    <MudTable
+        Breakpoint="Breakpoint.None"
+        Items="_items"
+        Loading="_items == null"
+        Dense="true"
+        Hover="true">
+        <ToolBarContent>
+            <div class="flex items-center w-full">
+                <span class="text-xl">Series</span>
+                <MudButton
+                    OnClick="OpenNewSeriesDialog"
+                    Class="ms-auto"
+                    StartIcon="@Icons.Material.Filled.Add"
+                    Variant="Variant.Filled"
+                    Color="Color.Tertiary">
+                    @Core.Localization.Translations.NEW_F
+                </MudButton>
+            </div>
+        </ToolBarContent>
+        <ColGroup>
+            <col style="width: 300px;"/>
+            <col/>
+            <col style="width: 100px;"/>
+        </ColGroup>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Series, object>(x => x.Name!)">@Translations.NAME</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Series, object>(x => x.Books.Count)">@Translations.BOOKS</MudTableSortLabel></MudTh>
+            <MudTh>@Translations.ACTIONS</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Name</MudTd>
+            <MudTd>@context.Books.Count()</MudTd>
+            <MudTd>
+                <MudIconButton
+                    OnClick="() => DeleteSeries(context.SeriesId)"
+                    Icon="@Icons.Material.Filled.Delete"
+                    Color="Color.Error"/>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <p class="text-xl py-5">No series found</p>
+        </NoRecordsContent>
+    </MudTable>
+</Container>
+
+<MudDialog @bind-Visible="_isDialogOpen">
+    <TitleContent>@Translations.NEW_SERIES</TitleContent>
+    <DialogContent>
+        <MudTextField
+            @bind-Value="_newSeriesName"
+            Variant="Variant.Outlined"
+            Label="@Translations.NAME"/>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="() => _isDialogOpen = false">@Translations.CANCEL</MudButton>
+        <MudButton Color="Color.Primary" OnClick="CreateNewSeries">@Translations.SAVE</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Inject] private ISender Sender { get; set; } = null!;
+    [Inject] private IAlertService AlertService { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+    
+    private List<Series>? _items;
+    
+    private bool _isDialogOpen;
+    private string _newSeriesName = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var getAllSeries = await Sender.Send(new GetAllSeries.Query(true));
+        if (getAllSeries.IsFailure)
+        {
+            await AlertService.ShowToastAsync(getAllSeries.Error.Description, AlertSeverity.Error);
+            return;
+        }
+        _items = getAllSeries.Value;
+    }
+    
+    private void OpenNewSeriesDialog()
+    {
+        _newSeriesName = string.Empty;
+        _isDialogOpen = true;
+    }
+    
+    private async Task CreateNewSeries()
+    {
+        if (string.IsNullOrWhiteSpace(_newSeriesName))
+        {
+            await AlertService.ShowToastAsync(Translations.SERIES_NAME_CANT_BE_EMPTY, AlertSeverity.Warning);
+            return;
+        }
+        
+        var result = await Sender.Send(new CreateSeries.Command(_newSeriesName));
+        if (result.IsFailure)
+        {
+            await AlertService.ShowToastAsync(result.Error.Description, AlertSeverity.Error);
+            return;
+        }
+        
+        _items!.Add(result.Value);
+        _isDialogOpen = false;
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private async Task DeleteSeries(Guid seriesId)
+    {
+        var confirm = await AlertService.ShowConfirmationAsync(Translations.DELETE_SERIES, Translations.DELETE_SERIES_CONFIRM_MESSAGE + "<br/>" + Translations.CANNOT_BE_UNDONE);
+        if (!confirm) return;
+		
+        var result = await Sender.Send(new DeleteSeries.Command(seriesId));
+        if (result.IsFailure)
+        {
+            await AlertService.ShowToastAsync(result.Error.Description, AlertSeverity.Error);
+            return;
+        }
+		
+        _items!.RemoveAll(c => c.SeriesId == seriesId);
+        await InvokeAsync(StateHasChanged);
+    }
+
+}

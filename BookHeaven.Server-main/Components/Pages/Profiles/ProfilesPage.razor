@@ -1,0 +1,130 @@
+﻿@using BookHeaven.Core.Features.Profiles
+@using BookHeaven.Server.Features.Session.Abstractions
+@attribute [Route(Urls.Profiles)]
+@layout SimpleLayout
+
+<PageTitle>@Translations.PROFILES</PageTitle>
+
+@if (!_isLoaded)
+{
+	return;
+}
+
+@if (_profiles.Count > 0)
+{
+	<SectionContent SectionName="Tools">
+
+		@switch (_layout)
+		{
+			case Layout.Select:
+				<MudButton Variant="Variant.Outlined" OnClick="() => _layout = Layout.Manage">
+					@Translations.PROFILES_MANAGE
+				</MudButton>
+				break;
+			case Layout.Manage:
+				<MudButton
+					OnClick="() => _layout = Layout.Select"
+					Class="w-[150px]"
+					Variant="Variant.Outlined">
+					@Translations.DONE
+				</MudButton>
+				break;
+		}
+	</SectionContent>
+}
+
+
+
+<div class="flex flex-col items-center h-full">
+	<h1 class="text-center text-2xl md:text-4xl animate-fade-in mt-10">
+		@switch (_layout)
+		{
+			case Layout.Select:
+				if (_profiles.Count == 0)
+				{
+					@Translations.PROFILES_CREATE_FIRST
+				}
+				else
+				{
+					@Translations.PROFILES_SELECT
+				}
+				break;
+			case Layout.Manage:
+				@Translations.PROFILES_MANAGE
+				break;
+		}
+	</h1>
+	<div class="grid @(_profiles.Count == 0 ? "grid-cols-1" : "grid-cols-2 lg:grid-cols-4") items-center gap-10 mt-20 2xl:mt-30">
+		@foreach (var profile in _profiles)
+		{
+			<button
+				class="relative group animate-zoom-in animate-duration-300 size-32 md:size-44 rounded-full flex items-center justify-center bg-slate-600 transition-all active:scale-95 outline-(--mud-palette-primary) hover:outline-4  @(profile.ProfileId == _selectedProfileId ? "outline-4 shadow-[0_0_25px_var(--mud-palette-primary)]" : "")"
+				@onclick="() => SelectProfile(profile)">
+				<span class="text-lg 2xl:text-2xl">@profile.Name</span>
+				@if (_layout is Layout.Manage)
+				{
+					<span class="absolute end-0 bottom-0 size-12 bg-slate-700 group-hover:bg-slate-200 group-hover:text-slate-700 flex items-center justify-center rounded-full transition-colors">
+						<MudIcon Icon="@Icons.Material.Filled.Edit" />
+					</span>
+				}
+			</button>
+		}
+		@if (_layout is Layout.Select)
+		{
+			<button 
+				@onclick="() => NavigationManager.NavigateTo(Urls.CreateProfile)"
+				class="animate-zoom-in animate-duration-300 size-32 md:size-44 rounded-full flex items-center justify-center text-slate-400 bg-slate-700 hover:bg-slate-600 hover:text-slate-300 transition-colors">
+				<MudIcon Icon="@Icons.Material.Filled.Add" Class="size-12 2xl:size-24"/>
+			</button>
+		}
+		
+	</div>
+</div>
+
+@code {
+	[Inject] private ISessionService SessionService { get; set; } = null!;
+	[Inject] private ISender Sender { get; set; } = null!;
+	[Inject] private NavigationManager NavigationManager { get; set; } = null!;
+	
+	private enum Layout
+	{
+		Select,
+		Manage,
+	}
+	
+	private bool _isLoaded;
+	private Guid _selectedProfileId;
+	private List<Profile> _profiles = [];
+	private Layout _layout = Layout.Select;
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		var getProfiles = await Sender.Send(new GetAllProfiles.Query());
+		if (getProfiles.IsSuccess)
+		{
+			_profiles = getProfiles.Value;
+		}
+		else
+		{
+			// Handle error, e.g., show a message to the user
+			Console.WriteLine("Failed to load profiles: " + getProfiles.Error);
+		}
+		_selectedProfileId = await SessionService.GetAsync<Guid>(SessionKey.SelectedProfileId);
+		_isLoaded = true;
+	}
+
+	private async Task SelectProfile(Profile profile)
+	{
+		switch (_layout)
+		{
+			case Layout.Select:
+				await SessionService.SetAsync(SessionKey.SelectedProfileId, profile.ProfileId);
+				NavigationManager.NavigateTo(Urls.Shelf);
+				break;
+			case Layout.Manage:
+				NavigationManager.NavigateTo(Urls.GetProfileUrl(profile.ProfileId));
+				break;
+		}
+	}
+}

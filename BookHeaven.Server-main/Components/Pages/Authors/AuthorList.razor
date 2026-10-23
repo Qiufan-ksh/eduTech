@@ -1,0 +1,94 @@
+@using BookHeaven.Core.Abstractions
+@using BookHeaven.Core.Features.Authors
+@attribute [Route(Urls.Authors)]
+<PageTitle>@Translations.AUTHORS</PageTitle>
+
+<Container>
+    <MudTable
+        T="Author"
+        Breakpoint="Breakpoint.None"
+        Items="_authors"
+        Loading="_authors == null"
+        OnRowClick="row => NavigationManager.NavigateTo(Urls.GetAuthorUrl(row.Item!.AuthorId))"
+        Hover="true"
+        Dense="true">
+        <ToolBarContent>
+            <div class="flex items-center w-full">
+                <span class="text-xl">@Translations.AUTHORS</span>
+                <MudButton
+                    Class="ms-auto"
+                    StartIcon="@Icons.Material.Filled.Add"
+                    Variant="Variant.Filled"
+                    Href="@Urls.CreateAuthor"
+                    Color="Color.Tertiary">
+                    @Core.Localization.Translations.NEW
+                </MudButton>
+            </div>
+        </ToolBarContent>
+        <ColGroup>
+            <col style="width: 300px;"/>
+            <col/>
+            <col style="width: 100px;"/>
+        </ColGroup>
+        <HeaderContent>
+            <MudTh><MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<Author, object>(x => x.Name!)">@Translations.NAME</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel SortBy="new Func<Author, object>(x => x.Books.Count)">@Translations.BOOKS</MudTableSortLabel></MudTh>
+            <MudTh>@Translations.ACTIONS</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Name</MudTd>
+            <MudTd>@context.Books.Count</MudTd>
+            <MudTd>
+                <MudIconButton
+                    OnClick="() => DeleteAuthor(context.AuthorId, context.Books.Count)"
+                    Icon="@Icons.Material.Filled.Delete"
+                    Color="Color.Error"/>
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <p class="text-xl py-5">No authors found</p>
+        </NoRecordsContent>
+    </MudTable>
+</Container>
+
+@code {
+    [Inject] private ISender Sender { get; set; } = null!;
+    [Inject] private IAlertService AlertService { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+    
+    private List<Author>? _authors;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var getAuthors = await Sender.Send(new GetAllAuthors.Query(true));
+        if (getAuthors.IsFailure)
+        {
+            await AlertService.ShowToastAsync(getAuthors.Error.Description, AlertSeverity.Error);
+            return;
+        }
+
+        _authors = getAuthors.Value;
+    }
+
+    private async Task DeleteAuthor(Guid authorId, int bookCount)
+    {
+        if (bookCount > 0)
+        {
+            await AlertService.ShowToastAsync(Translations.AUTHOR_NOT_EMPTY, AlertSeverity.Warning);
+            return;
+        }
+        
+        var confirm = await AlertService.ShowConfirmationAsync(Translations.DELETE_AUTHOR, Translations.DELETE_AUTHOR_CONFIRM_MESSAGE + "<br/>" + Translations.CANNOT_BE_UNDONE);
+        if (!confirm) return;
+        
+        var deleteAuthor = await Sender.Send(new DeleteAuthor.Command(authorId));
+        if (deleteAuthor.IsFailure)
+        {
+            await AlertService.ShowToastAsync(deleteAuthor.Error.Description, AlertSeverity.Error);
+            return;
+        }
+        _authors?.RemoveAll(a => a.AuthorId == authorId);
+        await AlertService.ShowToastAsync(Translations.AUTHOR_DELETED, AlertSeverity.Success);
+    }
+
+}

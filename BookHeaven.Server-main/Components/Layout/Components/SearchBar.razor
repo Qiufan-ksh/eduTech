@@ -1,0 +1,86 @@
+﻿@using BookHeaven.Core.Features.Books
+@using BookHeaven.Server.Features.Session.Abstractions
+<MudAutocomplete
+	@ref="_autocomplete"
+	Class="!mx-2"
+	Placeholder="Search"
+	Margin="Margin.Dense"
+	Variant="Variant.Outlined"
+	Adornment="Adornment.Start"
+	AdornmentIcon="@Icons.Material.Filled.Search"
+	@bind-Value="@_searchItem"
+	@bind-Value:after="NavigateToAndClear"
+	SearchFunc="Search">
+	<ItemTemplate Context="i">
+		<div class="flex items-center gap-2">
+			<img src="@i!.Image" class="w-14" alt="" />
+			<div class="grid">
+				<MudText Typo="Typo.body2" Color="Color.Default">@i.Title</MudText>
+				<MudText Typo="Typo.caption" Color="Color.Secondary">@i.Author</MudText>
+				<MudText Typo="Typo.caption" Color="Color.Primary">@i.Series</MudText>
+			</div>
+		</div>
+	</ItemTemplate>
+</MudAutocomplete>
+	
+@code {
+	[Inject] private NavigationManager NavigationManager { get; set; } = null!;
+	[Inject] private ISender Sender { get; set; } = null!;
+	[Inject] private ISessionService SessionService { get; set; } = null!;
+	private SearchItem? _searchItem;
+	private MudAutocomplete<SearchItem> _autocomplete = null!;
+	private Guid _profileId;
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		_profileId = await SessionService.GetAsync<Guid>(SessionKey.SelectedProfileId);
+	}
+
+	private async Task<IEnumerable<SearchItem?>> Search(string? value, CancellationToken token)
+	{
+		
+		if (string.IsNullOrEmpty(value)) return [];
+		
+		var getBooks = await Sender.Send(
+			new GetAllBooks.Query(_profileId,value)
+			,token);
+
+		if (getBooks.IsFailure)
+		{
+			return [];
+		}
+		
+		var searchItems = new List<SearchItem>();
+		searchItems.AddRange(getBooks.Value.Select(
+			b => new SearchItem
+			{
+				Image = b.CoverUrl(), 
+				Title = b.Title!, 
+				Url = Urls.GetBookUrl(b.BookId),
+				Author = b.Author?.Name,
+				Series = b.Series?.Name
+			})
+		);
+
+		return searchItems;
+	}
+
+	private async Task NavigateToAndClear()
+	{
+		if (_searchItem is null) return;
+		var url = _searchItem.Url;
+		await _autocomplete.ClearAsync();
+		NavigationManager.NavigateTo(url);
+		_searchItem = null;
+	}
+	
+	private class SearchItem
+	{
+		public string? Image { get; set; }
+		public string Title { get; set; } = null!;
+		public string? Author { get; set; }
+		public string? Series { get; set; }
+		public string Url { get; set; } = null!;
+	}
+}

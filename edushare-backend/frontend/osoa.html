@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduShare Tech - Nền tảng Chia sẻ Tài liệu & Hệ thống Gợi ý Thông minh</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        tech: {
+                            dark: '#0f172a',
+                            card: '#1e293b',
+                            border: '#334155',
+                            accent: '#06b6d4',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 9999px; }
+        .glow-accent { box-shadow: 0 0 15px -3px rgba(6, 182, 212, 0.3); }
+        .glow-brand { box-shadow: 0 0 15px -3px rgba(59, 130, 246, 0.3); }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-40 w-full border-b border-slate-800 bg-slate-900/90 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90 light:bg-white/90 light:border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-4">
+                
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-3">
+                    <div class="bg-gradient-to-tr from-brand-600 to-tech-accent p-2.5 rounded-xl shadow-lg shadow-brand-500/20">
+                        <i data-lucide="cpu" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-300 bg-clip-text text-transparent">
+                            EduShare<span class="text-xs font-semibold px-1.5 py-0.5 rounded bg-brand-500/20 text-brand-400 border border-brand-500/30 ml-1">TECH</span>
+                        </span>
+                        <p class="text-[10px] text-slate-400 hidden sm:block">Academic Knowledge Hub for Engineers</p>
+                    </div>
+                </div>
+
+                <!-- Global Search Input -->
+                <div class="flex-1 max-w-md mx-2 sm:mx-6">
+                    <div class="relative">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input id="searchInput" type="text" placeholder="Tìm tài liệu, môn học (C++, IoT, Đại số, Cơ điện tử)..." 
+                            class="w-full pl-10 pr-4 py-2 bg-slate-800/80 border border-slate-700/80 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all text-slate-200 light:bg-slate-100 light:border-slate-300 light:text-slate-800">
+                    </div>
+                </div>
+
+                <!-- Action Controls & Theme Toggle -->
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <!-- Quick Stats Badge -->
+                    <div class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/60 border border-slate-700/50 text-xs text-slate-300">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400 animate-pulse"></i>
+                        <span>Gợi ý dựa trên <strong id="userMajorBadge" class="text-cyan-400">CNTT</strong></span>
+                    </div>
+
+                    <div id="authControls" class="flex items-center gap-2">
+                        <button type="button" onclick="openAuthModal('login')" class="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-700/70 bg-slate-800 text-slate-200 hover:bg-slate-700 text-xs font-medium transition-all">
+                            <i data-lucide="log-in" class="w-4 h-4"></i><span>Đăng nhập</span>
+                        </button>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <button id="themeToggleBtn" title="Đổi giao diện" class="p-2 rounded-xl border border-slate-700/70 bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition-all">
+                        <i data-lucide="sun" id="sunIcon" class="w-4 h-4 hidden"></i>
+                        <i data-lucide="moon" id="moonIcon" class="w-4 h-4"></i>
+                    </button>
+
+                    <!-- Add New Resource Button -->
+                    <button onclick="openModal('uploadModal')" class="flex items-center gap-2 px-3.5 py-2 bg-gradient-to-r from-brand-600 to-cyan-600 hover:from-brand-500 hover:to-cyan-500 text-white font-medium text-xs sm:text-sm rounded-xl shadow-md transition-all transform active:scale-95">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Đóng góp / Cho mượn</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Academic Profile Filter Bar -->
+        <div class="bg-slate-950/60 border-t border-slate-800/80 py-2.5 px-4 sm:px-8 light:bg-slate-100 light:border-slate-200">
+            <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+                
+                <div class="flex flex-wrap items-center gap-3">
+                    <span class="text-slate-400 font-medium flex items-center gap-1.5">
+                        <i data-lucide="user-check" class="w-3.5 h-3.5 text-brand-400"></i> Hồ sơ học tập:
+                    </span>
+
+                    <!-- Select Major -->
+                    <select id="selectMajor" onchange="updateProfileFilters()" class="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-slate-200 focus:outline-none focus:border-brand-500 cursor-pointer light:bg-white light:border-slate-300 light:text-slate-800">
+                        <option value="CNTT">CNTT & Khoa học Máy tính</option>
+                        <option value="Cơ điện tử">Kỹ thuật Cơ điện tử</option>
+                        <option value="Trắc địa - Địa tin học">Trắc địa - Địa tin học</option>
+                        <option value="Địa chất - Dầu khí">Địa chất & Dầu khí</option>
+                        <option value="Kinh tế Kỹ thuật">Kinh tế Kỹ thuật</option>
+                    </select>
+
+                    <!-- Select Semester -->
+                    <select id="selectSemester" onchange="updateProfileFilters()" class="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-slate-200 focus:outline-none focus:border-brand-500 cursor-pointer light:bg-white light:border-slate-300 light:text-slate-800">
+                        <option value="Kỳ 1 - Năm 1">Năm 1 </option>
+                        <option value="Kỳ 2 - Năm 2">Năm 2 </option>
+                        <option value="Kỳ 1 - Năm 3" selected>Năm 3 (Chuyên ngành - K69)</option>
+                        <option value="Kỳ 2 - Năm 4">Học kỳ cuối (Đồ án tốt nghiệp)</option>
+                    </select>
+
+                    <!-- Select Goal -->
+                    <select id="selectGoal" onchange="updateProfileFilters()" class="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-slate-200 focus:outline-none focus:border-brand-500 cursor-pointer light:bg-white light:border-slate-300 light:text-slate-800">
+                        <option value="Ôn thi">Mục tiêu: Ôn thi & Giải đề</option>
+                        <option value="Nghiên cứu">Mục tiêu: Đọc Giáo trình chuẩn</option>
+                        <option value="Sách cũ">Mục tiêu: Tìm sách cũ 0đ</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2 text-slate-400">
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span>AI Engine Online: <span id="engineStatus" class="text-emerald-400 font-semibold">Tối ưu theo hành vi real-time</span></span>
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+
+        <!-- 1. Recommendation Engine Controls & Explanation Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Dynamic Recommendation Weights Panel -->
+            <div class="lg:col-span-2 bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 shadow-xl light:bg-white light:border-slate-200">
+                <div class="flex items-center justify-between border-b border-slate-700/60 pb-3 mb-4 light:border-slate-200">
+                    <div class="flex items-center gap-2.5">
+                        <div class="p-2 bg-brand-500/10 text-brand-400 rounded-lg">
+                            <i data-lucide="sliders" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-bold text-base text-slate-100 light:text-slate-800">Thuật toán Gợi ý Thông minh (Recommendation Parameters)</h2>
+                            <p class="text-xs text-slate-400">Điều chỉnh trọng số để mô phỏng ma trận lọc cộng tác (Collaborative Filtering & Content-Based)</p>
+                        </div>
+                    </div>
+                    <button onclick="resetSliders()" class="text-xs text-brand-400 hover:text-brand-300 flex items-center gap-1 font-medium">
+                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Mặc định
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <!-- Slider 1: Major Relevance -->
+                    <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/50 light:bg-slate-50 light:border-slate-200">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label class="text-xs font-semibold text-slate-300 flex items-center gap-1 light:text-slate-700">
+                                <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-cyan-400"></i> Độ khớp Ngành học
+                            </label>
+                            <span id="weightMajorVal" class="text-xs font-bold text-cyan-400">80%</span>
+                        </div>
+                        <input id="sliderMajor" type="range" min="0" max="100" value="80" oninput="onWeightChange()" class="w-full accent-cyan-400 h-1.5 bg-slate-700 rounded-lg cursor-pointer">
+                        <p class="text-[10px] text-slate-400 mt-1">Ưu tiên tài liệu đúng mã ngành kỹ thuật</p>
+                    </div>
+
+                    <!-- Slider 2: Peer Popularity -->
+                    <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/50 light:bg-slate-50 light:border-slate-200">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label class="text-xs font-semibold text-slate-300 flex items-center gap-1 light:text-slate-700">
+                                <i data-lucide="users" class="w-3.5 h-3.5 text-brand-400"></i> Xu hướng Bạn cùng khóa
+                            </label>
+                            <span id="weightPopularityVal" class="text-xs font-bold text-brand-400">65%</span>
+                        </div>
+                        <input id="sliderPopularity" type="range" min="0" max="100" value="65" oninput="onWeightChange()" class="w-full accent-brand-500 h-1.5 bg-slate-700 rounded-lg cursor-pointer">
+                        <p class="text-[10px] text-slate-400 mt-1">Tài liệu được khóa trên & bạn học tải nhiều</p>
+                    </div>
+
+                    <!-- Slider 3: Interaction History -->
+                    <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/50 light:bg-slate-50 light:border-slate-200">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label class="text-xs font-semibold text-slate-300 flex items-center gap-1 light:text-slate-700">
+                                <i data-lucide="history" class="w-3.5 h-3.5 text-purple-400"></i> Lịch sử Luyện đề/Đọc
+                            </label>
+                            <span id="weightHistoryVal" class="text-xs font-bold text-purple-400">90%</span>
+                        </div>
+                        <input id="sliderHistory" type="range" min="0" max="100" value="90" oninput="onWeightChange()" class="w-full accent-purple-500 h-1.5 bg-slate-700 rounded-lg cursor-pointer">
+                        <p class="text-[10px] text-slate-400 mt-1">Dựa trên sách bạn đã Xem / Lưu gần đây</p>
+                    </div>
+                </div>
+
+                <!-- Active Course Tags -->
+                <div class="mt-4 flex flex-wrap items-center gap-2">
+                    <span class="text-xs text-slate-400 font-medium">Môn học ưu tiên AI:</span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-brand-500/10 text-brand-300 border border-brand-500/30">
+                        Lập trình C++ & OOP
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                        Vi điều khiển & IoT
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                        Đại số Tuyến tính
+                    </span>
+                    <button onclick="addNewCourseTag()" class="text-xs text-slate-400 hover:text-white underline ml-auto">+ Thêm môn học</button>
+                </div>
+            </div>
+
+            <!-- AI Recommendation Insights Card -->
+            <div class="bg-gradient-to-br from-slate-800 to-slate-900 border border-cyan-500/30 rounded-2xl p-5 shadow-xl relative overflow-hidden flex flex-col justify-between light:from-white light:to-slate-50 light:border-slate-200">
+                <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                            <i data-lucide="bot" class="w-3.5 h-3.5"></i> Smart Explainability
+                        </span>
+                        <span class="text-[10px] text-slate-400">Engine v2.4</span>
+                    </div>
+
+                    <h3 class="font-bold text-sm text-slate-100 mb-1 light:text-slate-800" id="aiInsightTitle">Tại sao bạn thấy danh sách này?</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed light:text-slate-600" id="aiInsightText">
+                        Hệ thống phát hiện bạn thuộc ngành <strong class="text-cyan-400">CNTT (K67)</strong> và chuẩn bị cho kỳ thi môn <strong class="text-brand-400">Lập trình C++</strong>. 89% sinh viên điểm A môn này đã tải slide & bài tập tổng hợp dưới đây.
+                    </p>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-700/60 light:border-slate-200">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-400">Độ tin cậy thuật toán:</span>
+                        <span class="font-bold text-emerald-400 flex items-center gap-1">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> 96.8% Match
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- 2. Interactive Document Grid Section -->
+        <section class="space-y-4">
+            
+            <!-- Section Header & Filter Tabs -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3 light:border-slate-200">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2 light:text-slate-800">
+                        <i data-lucide="book-open" class="w-5 h-5 text-brand-400"></i>
+                        Gợi ý Tài liệu & Giáo trình dành riêng cho bạn
+                    </h2>
+                    <p class="text-xs text-slate-400">Cập nhật tự động dựa trên chỉ số phù hợp (Match Score %)</p>
+                </div>
+
+                <!-- Document Category Tabs -->
+                <div class="flex items-center gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/80 overflow-x-auto light:bg-slate-200 light:border-slate-300">
+                    <button onclick="filterType('all')" class="tab-btn active px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-brand-600 text-white shadow">Tất cả</button>
+                    <button onclick="filterType('giao-trinh')" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition-all light:text-slate-700">Giáo trình chuẩn</button>
+                    <button onclick="filterType('de-thi')" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition-all light:text-slate-700">Đề thi & Đáp án</button>
+                    <button onclick="filterType('slide')" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition-all light:text-slate-700">Slide / Bài giảng</button>
+                    <button onclick="filterType('sach-cu')" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white transition-all light:text-slate-700">Sách cũ 0đ</button>
+                </div>
+            </div>
+
+            <!-- Documents Grid -->
+            <div id="documentGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Cards will be dynamically rendered here via JS -->
+            </div>
+
+        </section>
+
+        <!-- 3. Real-time Interactive Simulation & Logs Section -->
+        <section class="bg-slate-950 border border-slate-800 rounded-2xl p-5 shadow-2xl relative light:bg-slate-900 light:border-slate-700">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg">
+                        <i data-lucide="activity" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-100">Mô phỏng Luồng Học máy & Nhật ký Tương tác Realtime</h3>
+                        <p class="text-xs text-slate-400">Quan sát cách AI cập nhật trọng số khi bạn bấm Like, Lưu hoặc Tải tài liệu</p>
+                    </div>
+                </div>
+                <button onclick="clearLogs()" class="text-xs text-slate-400 hover:text-slate-200">Xóa log</button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <!-- Live Stats -->
+                <div class="space-y-3">
+                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                        <span class="text-[10px] text-slate-400 block uppercase font-semibold">Tổng tương tác phiên này</span>
+                        <span id="statInteractions" class="text-xl font-extrabold text-cyan-400">0</span>
+                        <span class="text-[10px] text-slate-500 block">Lượt Click / Bookmark / Tải</span>
+                    </div>
+
+                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                        <span class="text-[10px] text-slate-400 block uppercase font-semibold">Chủ đề quan tâm hàng đầu</span>
+                        <span id="statTopInterest" class="text-sm font-bold text-brand-400">Lập trình & Thuật toán</span>
+                    </div>
+                </div>
+
+                <!-- Live Stream Console Log -->
+                <div class="lg:col-span-3 bg-slate-900/90 rounded-xl border border-slate-800 p-3 font-mono text-xs max-h-40 overflow-y-auto custom-scrollbar" id="logConsole">
+                    <div class="text-slate-500">// Hệ thống AI đã khởi tạo. Đang chờ tương tác từ người dùng...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Peer-to-Peer Book Exchange Market Section -->
+        <section class="space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3 light:border-slate-200">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2 light:text-slate-800">
+                        <i data-lucide="repeat" class="w-5 h-5 text-emerald-400"></i>
+                        Góc Trao Đổi Sách Giáo Trình Cũ (Peer-to-Peer Exchange)
+                    </h2>
+                    <p class="text-xs text-slate-400">Sách in cũ chuyền tay nhau giữa các khóa sinh viên - Tiết kiệm & Bảo vệ môi trường</p>
+                </div>
+                <button onclick="openModal('exchangeModal')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-medium transition-all flex items-center gap-1.5 shadow">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i> Đăng sách muốn đổi
+                </button>
+            </div>
+
+            <!-- Exchange Grid -->
+            <div id="exchangeGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Dynamically populated via JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-950 mt-12 py-8 text-xs text-slate-500 light:bg-slate-100 light:border-slate-200 light:text-slate-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <p class="font-semibold text-slate-400 light:text-slate-700">EduShare Tech - HUMG Academic Knowledge Hub</p>
+                <p>Nền tảng chia sẻ giáo trình tích hợp Hệ thống Gợi ý Thông minh cho sinh viên Khối Ngành Kỹ Thuật.</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="#" class="hover:underline">Điều khoản chia sẻ</a>
+                <a href="#" class="hover:underline">Thuật toán AI</a>
+                <a href="#" class="hover:underline">Liên hệ Hỗ trợ</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Authentication Modal -->
+    <div id="authModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl relative light:bg-white light:border-slate-300">
+            <button type="button" onclick="closeModal('authModal')" aria-label="Đóng" class="absolute right-4 top-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h2 id="authModalTitle" class="text-lg font-bold text-slate-100 mb-1 light:text-slate-800">Đăng nhập EduShare</h2>
+            <p class="text-xs text-slate-400 mb-4">Đăng nhập để lưu tài khoản và sử dụng EduShare.</p>
+            <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3 text-xs">
+                <div id="authNameField" class="hidden">
+                    <label for="authDisplayName" class="block font-medium mb-1 text-slate-300 light:text-slate-700">Tên hiển thị</label>
+                    <input id="authDisplayName" type="text" minlength="2" maxlength="80" autocomplete="name" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-brand-500 light:bg-slate-50 light:border-slate-300 light:text-slate-800">
+                </div>
+                <div>
+                    <label for="authEmail" class="block font-medium mb-1 text-slate-300 light:text-slate-700">Email</label>
+                    <input id="authEmail" type="email" required maxlength="254" autocomplete="email" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-brand-500 light:bg-slate-50 light:border-slate-300 light:text-slate-800">
+                </div>
+                <div>
+                    <label for="authPassword" class="block font-medium mb-1 text-slate-300 light:text-slate-700">Mật khẩu</label>
+                    <input id="authPassword" type="password" required minlength="8" maxlength="72" autocomplete="current-password" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-brand-500 light:bg-slate-50 light:border-slate-300 light:text-slate-800">
+                    <p id="authPasswordHint" class="text-[10px] text-slate-400 mt-1 hidden">Mật khẩu cần ít nhất 8 ký tự.</p>
+                </div>
+                <p id="authError" role="alert" class="hidden text-rose-400 text-xs"></p>
+                <div class="pt-2 flex items-center justify-between gap-2">
+                    <button id="authModeToggle" type="button" onclick="toggleAuthMode()" class="text-brand-400 hover:text-brand-300">Chưa có tài khoản? Đăng ký</button>
+                    <button id="authSubmitButton" type="submit" class="px-4 py-2 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-500">Đăng nhập</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 1: Upload / Contribute Document -->
+    <div id="uploadModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative light:bg-white light:border-slate-300">
+            <button onclick="closeModal('uploadModal')" class="absolute right-4 top-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <h3 class="text-lg font-bold text-slate-100 mb-1 light:text-slate-800">Đóng góp Tài liệu Học tập Mới</h3>
+            <p class="text-xs text-slate-400 mb-4">Tài liệu của bạn sẽ được hệ thống phân loại và gợi ý đến các bạn cùng khóa.</p>
+
+            <form onsubmit="handleUploadSubmit(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-medium mb-1 text-slate-300 light:text-slate-700">Tên tài liệu / Tên sách *</label>
+                    <input type="text" id="upTitle" required placeholder="VD: Giáo trình Vật lý Đại cương A1 (Tập 1)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-brand-500 light:bg-slate-50 light:border-slate-300 light:text-slate-800">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-medium mb-1 text-slate-300 light:text-slate-700">Khối ngành *</label>
+                        <select id="upMajor" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-brand-500 light:bg-slate-50 light:border-slate-300 light:text-slate-800">
+                            <option>CNTT</option>
+                            <option>Cơ điện tử</option>
+                            <option>Trắc địa </option>
+                            <option>Địa chất</option>
+                            <option>Dầu khí</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1 text-slate-300 light:text-slate-700">Loại tài liệu *</label>
+                        <select id="upType" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-brand-500 light:bg-slate-50 light:border-slate-300 light:text-slate-800">
+                            <option value="giao-trinh">Giáo trình chính thức</option>
+                            <option value="de-thi">Đề thi & Đáp án</option>
+                            <option value="slide">Slide bài giảng</option>
+                            <option value="sach-cu">Sách in cũ (Trao đổi)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-medium mb-1 text-slate-300 light:text-slate-700">Tên môn học tương ứng *</label>
+                    <input type="text" id="upSubject" required placeholder="VD: Vật lý 1, Lập trình C++, Trắc địa đại cương..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-brand-500 light:bg-slate-50 light:border-slate-300 light:text-slate-800">
+                </div>
+
+                <div>
+                    <label class="block font-medium mb-1 text-slate-300 light:text-slate-700">Link tải / Tệp đính kèm (Mô phỏng)</label>
+                    <input type="text" id="upLink" placeholder="https://drive.google.com/..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-brand-500 light:bg-slate-50 light:border-slate-300 light:text-slate-800">
+                </div>
+
+                <div class="pt-3 flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('uploadModal')" class="px-4 py-2 bg-slate-700 text-slate-300 rounded-lg font-medium hover:bg-slate-600">Hủy</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-500">Tải lên & Phân loại AI</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Request Exchange Modal -->
+    <div id="exchangeModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative light:bg-white light:border-slate-300">
+            <button onclick="closeModal('exchangeModal')" class="absolute right-4 top-4 text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <h3 class="text-lg font-bold text-slate-100 mb-1 light:text-slate-800">Đăng Sách Cũ Cần Đổi / Tặng Sinh Viên</h3>
+            <p class="text-xs text-slate-400 mb-4">Chia sẻ cuốn sách in bạn không còn dùng cho các em khóa dưới.</p>
+
+            <form onsubmit="handleExchangeSubmit(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-medium mb-1 text-slate-300 light:text-slate-700">Tên cuốn sách *</label>
+                    <input type="text" id="exTitle" required placeholder="VD: Giáo trình Cơ học Lý thuyết - Tác giả Nguyễn Văn A" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-brand-500 light:bg-slate-50 light:border-slate-300 light:text-slate-800">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-medium mb-1 text-slate-300 light:text-slate-700">Tình trạng sách</label>
+                        <select id="exCondition" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-brand-500 light:bg-slate-50 light:border-slate-300 light:text-slate-800">
+                            <option>Mới 95% (Mới đọc vài lần)</option>
+                            <option>Khá (Mới 80% - Có highlight)</option>
+                            <option>Cũ (Mất bìa nhẹ, đọc tốt)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1 text-slate-300 light:text-slate-700">Hình thức</label>
+                        <select id="exMode" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-brand-500 light:bg-slate-50 light:border-slate-300 light:text-slate-800">
+                            <option value="Tặng 0đ">Tặng </option>
+                            <option value="Đổi sách">Đổi  sách </option>
+                            <option value="Giá rẻ">Nhượng lại </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-medium mb-1 text-slate-300 light:text-slate-700">Thông tin liên hệ (Zalo/SĐT/Facebook)</label>
+                    <input type="text" id="exContact" required placeholder="VD: Zalo 0987xxx654 - Ký túc xá Khu B" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 focus:outline-none focus:border-brand-500 light:bg-slate-50 light:border-slate-300 light:text-slate-800">
+                </div>
+
+                <div class="pt-3 flex justify-end gap-2">
+                    <button type="button" onclick="closeModal('exchangeModal')" class="px-4 py-2 bg-slate-700 text-slate-300 rounded-lg font-medium hover:bg-slate-600">Hủy</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-500">Đăng bài ngay</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Box -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-800 border border-brand-500 text-slate-100 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+        <i data-lucide="check-circle" class="w-5 h-5 text-emerald-400" id="toastIcon"></i>
+        <div>
+            <p id="toastTitle" class="font-bold text-xs">Thành công!</p>
+            <p id="toastMsg" class="text-[11px] text-slate-300">Đã cập nhật hệ thống gợi ý AI.</p>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- Sample Technical Documents Dataset ---
+        const initialDocuments = [
+            {
+                id: 1,
+                title: "Giáo trình Lập trình C++ Nâng cao & OOP",
+                author: "Khoa CNTT - HUMG",
+                uploader: "Thầy Nguyễn Văn Đức",
+                major: "CNTT",
+                subject: "Lập trình C++",
+                type: "giao-trinh",
+                format: "PDF (8.5 MB)",
+                downloads: 1420,
+                rating: 4.9,
+                baseScore: 92,
+                aiReason: "Phù hợp 98% với môn Lập trình C++ kỳ này. 85% sinh viên K21 CNTT đã lưu tài liệu này.",
+                bookmarked: false,
+                likes: 310
+            },
+            {
+                id: 2,
+                title: "Bộ Đề thi & Đáp án chi tiết Vi điều khiển & IoT (2021-2024)",
+                author: "CLB Sinh viên NCKH Cơ điện tử",
+                uploader: "Lê Minh Tuấn (K66)",
+                major: "Cơ điện tử",
+                subject: "Vi điều khiển & IoT",
+                type: "de-thi",
+                format: "PDF & Code Zip",
+                downloads: 890,
+                rating: 4.8,
+                baseScore: 88,
+                aiReason: "Phù hợp với mục tiêu 'Ôn thi' của bạn. Đã tổng hợp 12 đề thi giữa kỳ & cuối kỳ.",
+                bookmarked: true,
+                likes: 245
+            },
+            {
+                id: 3,
+                title: "Slide Bài giảng Đại số Tuyến tính & Ứng dụng Kỹ thuật",
+                author: "Bộ môn Toán ứng dụng",
+                uploader: "Cô Trần Thị Mai",
+                major: "CNTT",
+                subject: "Đại số Tuyến tính",
+                type: "slide",
+                format: "PPTX (15 Slide)",
+                downloads: 2150,
+                rating: 4.7,
+                baseScore: 84,
+                aiReason: "Tài liệu đại cương chuẩn cho Học kỳ 1. Được đánh giá dễ hiểu nhất bởi khóa trước.",
+                bookmarked: false,
+                likes: 512
+            },
+            {
+                id: 4,
+                title: "Giáo trình Trắc địa Đại cương & Đo vẽ bản đồ",
+                author: "NXB Giao thông Vận tải",
+                uploader: "Phạm Quốc Hùng",
+                major: "Trắc địa - Địa tin học",
+                subject: "Trắc địa đại cương",
+                type: "giao-trinh",
+                format: "Sách in cũ",
+                downloads: 340,
+                rating: 4.6,
+                baseScore: 76,
+                aiReason: "Gợi ý dựa trên độ tương quan giữa khối ngành Kỹ thuật Trắc địa & Địa tin học.",
+                bookmarked: false,
+                likes: 98
+            },
+            {
+                id: 5,
+                title: "Tổng hợp Lý thuyết & Bài tập Địa chất Đại cương",
+                author: "Khoa Dầu khí",
+                uploader: "Hoàng Anh Tuấn",
+                major: "Địa chất - Dầu khí",
+                subject: "Địa chất đại cương",
+                type: "slide",
+                format: "PDF (12 MB)",
+                downloads: 620,
+                rating: 4.5,
+                baseScore: 70,
+                aiReason: "Dành cho sinh viên khối ngành Trái đất & Tài nguyên Môi trường.",
+                bookmarked: false,
+                likes: 120
+            },
+            {
+                id: 6,
+                title: "Đề thi thử & Ngân hàng câu hỏi Kinh tế Kỹ thuật",
+                author: "Bộ môn Quản lý Kinh tế",
+                uploader: "Nguyễn Thị Hương",
+                major: "Kinh tế Kỹ thuật",
+                subject: "Kinh tế Kỹ thuật",
+                type: "de-thi",
+                format: "DOCX",
+                downloads: 1100,
+                rating: 4.8,
+                baseScore: 80,
+                aiReason: "Có 90% khả năng xuất hiện trong đề thi học kỳ theo phân tích đề các năm.",
+                bookmarked: false,
+                likes: 290
+            }
+        ];
+
+        // --- Sample Peer Exchange Books ---
+        const initialExchangeBooks = [
+            {
+                id: 101,
+                title: "Sách Giáo trình Cơ học Lý thuyết (Tập 1)",
+                owner: "Trần Văn Bình (K65)",
+                major: "Cơ điện tử",
+                condition: "Mới 90% - Có Highlight",
+                mode: "Tặng 0đ",
+                contact: "Zalo: 0912.345.xxx (KTX Tầng 3)",
+                time: "10 phút trước"
+            },
+            {
+                id: 102,
+                title: "Giáo trình Lập trình Python cho Khoa học Dữ liệu",
+                owner: "Đặng Thu Thảo (K66)",
+                major: "CNTT",
+                condition: "Mới 98%",
+                mode: "Đổi lấy sách IoT",
+                contact: "FB: fb.com/thaodang.humg",
+                time: "1 giờ trước"
+            },
+            {
+                id: 103,
+                title: "Sách Hướng dẫn Đo đạc Trắc địa Công trình",
+                owner: "Nguyễn Huy Hoàng (K64)",
+                major: "Trắc địa",
+                condition: "Cũ - Đọc tốt",
+                mode: "Nhượng 15k",
+                contact: "SĐT: 0988.777.xxx",
+                time: "3 giờ trước"
+            },
+            {
+                id: 104,
+                title: "Giáo trình Hóa học Đại cương Kỹ thuật",
+                owner: "Phan Mỹ Linh (K67)",
+                major: "Địa chất - Dầu khí",
+                condition: "Mới 95%",
+                mode: "Tặng 0đ",
+                contact: "Zalo: 0399.111.xxx",
+                time: "Hôm qua"
+            }
+        ];
+
+        // --- Application State ---
+        let documents = [...initialDocuments];
+        let exchangeBooks = [...initialExchangeBooks];
+        let currentFilterType = 'all';
+        let totalInteractions = 0;
+        let logs = [];
+        let authMode = 'login';
+
+        // --- Core Startup ---
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            setupThemeToggle();
+            renderDocuments();
+            renderExchangeBooks();
+            addLog("AI Recommendation Engine initialized. Hybrid Matrix active.");
+            restoreAuthSession();
+        });
+
+        function updateAuthControls(user) {
+            const controls = document.getElementById('authControls');
+            controls.replaceChildren();
+
+            if (!user) {
+                const loginButton = document.createElement('button');
+                loginButton.type = 'button';
+                loginButton.className = 'flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-700/70 bg-slate-800 text-slate-200 hover:bg-slate-700 text-xs font-medium transition-all';
+                loginButton.innerHTML = '<i data-lucide="log-in" class="w-4 h-4"></i><span>Đăng nhập</span>';
+                loginButton.addEventListener('click', () => openAuthModal('login'));
+                controls.append(loginButton);
+            } else {
+                const name = document.createElement('span');
+                name.className = 'hidden sm:inline max-w-32 truncate text-xs text-slate-300';
+                name.textContent = user.displayName;
+                name.title = user.email;
+                controls.append(name);
+
+                const logoutButton = document.createElement('button');
+                logoutButton.type = 'button';
+                logoutButton.className = 'flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-700/70 bg-slate-800 text-slate-200 hover:bg-slate-700 text-xs font-medium transition-all';
+                logoutButton.innerHTML = '<i data-lucide="log-out" class="w-4 h-4"></i><span>Đăng xuất</span>';
+                logoutButton.addEventListener('click', logout);
+                controls.append(logoutButton);
+            }
+
+            lucide.createIcons();
+        }
+
+        async function restoreAuthSession() {
+            try {
+                const response = await fetch('/api/auth/me', { credentials: 'same-origin' });
+                if (response.status === 401) {
+                    updateAuthControls(null);
+                    return;
+                }
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || 'Không thể kiểm tra phiên đăng nhập.');
+                }
+                updateAuthControls(result.user);
+            } catch (error) {
+                updateAuthControls(null);
+                showToast('Không thể kết nối', error.message || 'Hãy mở trang qua backend EduShare.');
+            }
+        }
+
+        function openAuthModal(mode = 'login') {
+            authMode = mode;
+            updateAuthModal();
+            openModal('authModal');
+        }
+
+        function toggleAuthMode() {
+            authMode = authMode === 'login' ? 'register' : 'login';
+            updateAuthModal();
+        }
+
+        function updateAuthModal() {
+            const isRegistering = authMode === 'register';
+            document.getElementById('authModalTitle').textContent = isRegistering ? 'Tạo tài khoản EduShare' : 'Đăng nhập EduShare';
+            document.getElementById('authNameField').classList.toggle('hidden', !isRegistering);
+            document.getElementById('authDisplayName').required = isRegistering;
+            document.getElementById('authPassword').autocomplete = isRegistering ? 'new-password' : 'current-password';
+            document.getElementById('authPasswordHint').classList.toggle('hidden', !isRegistering);
+            document.getElementById('authSubmitButton').textContent = isRegistering ? 'Đăng ký' : 'Đăng nhập';
+            document.getElementById('authModeToggle').textContent = isRegistering
+                ? 'Đã có tài khoản? Đăng nhập'
+                : 'Chưa có tài khoản? Đăng ký';
+            document.getElementById('authError').classList.add('hidden');
+        }
+
+        async function handleAuthSubmit(event) {
+            event.preventDefault();
+            const errorElement = document.getElementById('authError');
+            const submitButton = document.getElementById('authSubmitButton');
+            errorElement.classList.add('hidden');
+            submitButton.disabled = true;
+
+            const payload = {
+                email: document.getElementById('authEmail').value,
+                password: document.getElementById('authPassword').value
+            };
+            if (authMode === 'register') {
+                payload.displayName = document.getElementById('authDisplayName').value;
+            }
+
+            try {
+                const response = await fetch(`/api/auth/${authMode}`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || 'Không thể xác thực tài khoản.');
+                }
+
+                updateAuthControls(result.user);
+                closeModal('authModal');
+                document.getElementById('authForm').reset();
+                showToast(authMode === 'register' ? 'Đăng ký thành công' : 'Đăng nhập thành công', `Xin chào ${result.user.displayName}!`);
+                addLog(`[Auth] ${authMode === 'register' ? 'Tạo tài khoản' : 'Đăng nhập'} thành công.`);
+            } catch (error) {
+                errorElement.textContent = error instanceof TypeError
+                    ? 'Không thể kết nối máy chủ. Hãy khởi động backend và mở trang qua http://localhost:3000.'
+                    : error.message;
+                errorElement.classList.remove('hidden');
+            } finally {
+                submitButton.disabled = false;
+            }
+        }
+
+        async function logout() {
+            try {
+                const response = await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'same-origin'
+                });
+                if (!response.ok) {
+                    const result = await response.json();
+                    throw new Error(result.error || 'Không thể đăng xuất.');
+                }
+
+                updateAuthControls(null);
+                showToast('Đã đăng xuất', 'Bạn đã đăng xuất khỏi EduShare.');
+                addLog('[Auth] Đăng xuất thành công.');
+            } catch (error) {
+                showToast('Đăng xuất thất bại', error instanceof TypeError
+                    ? 'Không thể kết nối máy chủ. Vui lòng thử lại.'
+                    : error.message);
+            }
+        }
+
+        // --- Theme Toggle (Dark / Light) ---
+        function setupThemeToggle() {
+            const btn = document.getElementById('themeToggleBtn');
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+
+            btn.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                const isDark = document.documentElement.classList.contains('dark');
+                if (isDark) {
+                    sunIcon.classList.add('hidden');
+                    moonIcon.classList.remove('hidden');
+                    showToast("Đã chuyển sang Dark Mode", "Giao diện tối ưu cho mắt khi học đêm.");
+                } else {
+                    sunIcon.classList.remove('hidden');
+                    moonIcon.classList.add('hidden');
+                    showToast("Đã chuyển sang Light Mode", "Giao diện sáng sủa, rõ ràng.");
+                }
+            });
+        }
+
+        // --- Recommendation Algorithm Logic (Simulation) ---
+        function calculateMatchScore(doc) {
+            const majorWeight = parseInt(document.getElementById('sliderMajor').value) / 100;
+            const popWeight = parseInt(document.getElementById('sliderPopularity').value) / 100;
+            const histWeight = parseInt(document.getElementById('sliderHistory').value) / 100;
+
+            const selectedMajor = document.getElementById('selectMajor').value;
+            
+            // Factor 1: Major Relevance
+            let majorScore = doc.major === selectedMajor ? 100 : 40;
+
+            // Factor 2: Popularity Score
+            let popScore = Math.min(100, (doc.downloads / 2500) * 100);
+
+            // Factor 3: Dynamic Interaction Bonus
+            let histScore = doc.bookmarked ? 95 : (doc.likes > 200 ? 80 : 50);
+
+            // Calculate Weighted Average
+            const totalWeight = majorWeight + popWeight + histWeight;
+            if (totalWeight === 0) return doc.baseScore;
+
+            let finalScore = Math.round(
+                (majorScore * majorWeight + popScore * popWeight + histScore * histWeight) / totalWeight
+            );
+
+            return Math.min(99, Math.max(50, finalScore));
+        }
+
+        function onWeightChange() {
+            document.getElementById('weightMajorVal').textContent = document.getElementById('sliderMajor').value + '%';
+            document.getElementById('weightPopularityVal').textContent = document.getElementById('sliderPopularity').value + '%';
+            document.getElementById('weightHistoryVal').textContent = document.getElementById('sliderHistory').value + '%';
+
+            renderDocuments();
+            addLog(`Trọng số gợi ý thay đổi: [Ngành: ${document.getElementById('sliderMajor').value}%, Xu hướng: ${document.getElementById('sliderPopularity').value}%, Lịch sử: ${document.getElementById('sliderHistory').value}%]`);
+        }
+
+        function resetSliders() {
+            document.getElementById('sliderMajor').value = 80;
+            document.getElementById('sliderPopularity').value = 65;
+            document.getElementById('sliderHistory').value = 90;
+            onWeightChange();
+            showToast("Đã khôi phục trọng số", "Cấu hình AI gợi ý về mặc định.");
+        }
+
+        function updateProfileFilters() {
+            const major = document.getElementById('selectMajor').value;
+            const goal = document.getElementById('selectGoal').value;
+            document.getElementById('userMajorBadge').textContent = major;
+
+            // Dynamic AI Insight text update
+            const insightTitle = document.getElementById('aiInsightTitle');
+            const insightText = document.getElementById('aiInsightText');
+
+            insightTitle.textContent = `Tối ưu gợi ý cho ngành ${major}`;
+            insightText.innerHTML = `Hệ thống vừa cập nhật ma trận gợi ý dựa trên mục tiêu <strong class="text-brand-400">${goal}</strong> của sinh viên ngành <strong class="text-cyan-400">${major}</strong>. Các tài liệu trùng khớp đã được đẩy lên đầu.`;
+
+            renderDocuments();
+            addLog(`Cập nhật hồ sơ học tập -> Ngành: ${major} | Mục tiêu: ${goal}`);
+        }
+
+        // --- Document Rendering & Interaction ---
+        function renderDocuments() {
+            const grid = document.getElementById('documentGrid');
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+
+            // Calculate scores & sort
+            let processedDocs = documents.map(doc => {
+                return { ...doc, calculatedScore: calculateMatchScore(doc) };
+            });
+
+            // Sort by match score descending
+            processedDocs.sort((a, b) => b.calculatedScore - a.calculatedScore);
+
+            // Filter by tab & search
+            let filteredDocs = processedDocs.filter(doc => {
+                const matchesType = (currentFilterType === 'all') || (doc.type === currentFilterType);
+                const matchesSearch = doc.title.toLowerCase().includes(searchVal) ||
+                                      doc.subject.toLowerCase().includes(searchVal) ||
+                                      doc.major.toLowerCase().includes(searchVal);
+                return matchesType && matchesSearch;
+            });
+
+            if (filteredDocs.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-slate-400 bg-slate-800/40 rounded-2xl border border-slate-700/50">
+                        <i data-lucide="file-search" class="w-10 h-10 mx-auto text-slate-500 mb-2"></i>
+                        <p class="font-semibold text-sm">Không tìm thấy tài liệu phù hợp</p>
+                        <p class="text-xs text-slate-500 mt-1">Thử đổi từ khóa tìm kiếm hoặc điều chỉnh bộ lọc trọng số AI.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            grid.innerHTML = filteredDocs.map(doc => `
+                <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-5 shadow-lg flex flex-col justify-between hover:border-brand-500/50 transition-all duration-300 hover:shadow-brand-500/10 group light:bg-white light:border-slate-200">
+                    
+                    <div>
+                        <!-- Header Badges -->
+                        <div class="flex items-start justify-between gap-2 mb-3">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold ${
+                                doc.calculatedScore >= 85 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-brand-500/20 text-brand-400 border border-brand-500/30'
+                            }">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> ${doc.calculatedScore}% Phù hợp
+                            </span>
+
+                            <div class="flex items-center gap-1">
+                                <span class="px-2 py-0.5 rounded text-[10px] uppercase font-semibold bg-slate-700 text-slate-300 light:bg-slate-200 light:text-slate-700">
+                                    ${doc.major}
+                                </span>
+                                <button onclick="toggleBookmark(${doc.id})" title="Lưu tài liệu" class="p-1.5 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-slate-700/50 transition-all">
+                                    <i data-lucide="bookmark" class="w-4 h-4 ${doc.bookmarked ? 'text-amber-400 fill-amber-400' : ''}"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Title & Meta -->
+                        <h3 class="font-bold text-sm text-slate-100 group-hover:text-brand-400 transition-colors line-clamp-2 mb-1.5 light:text-slate-800">
+                            ${doc.title}
+                        </h3>
+
+                        <p class="text-xs text-slate-400 flex items-center gap-1.5 mb-2">
+                            <i data-lucide="book" class="w-3.5 h-3.5 text-cyan-400"></i> Môn: <strong class="text-slate-300 light:text-slate-700">${doc.subject}</strong>
+                        </p>
+
+                        <!-- AI Reason Tooltip Box -->
+                        <div class="bg-slate-900/80 border border-slate-700/60 rounded-xl p-2.5 mb-3 text-[11px] text-slate-300 light:bg-slate-50 light:border-slate-200 light:text-slate-600">
+                            <p class="flex items-start gap-1.5">
+                                <i data-lucide="info" class="w-3.5 h-3.5 text-brand-400 shrink-0 mt-0.5"></i>
+                                <span>${doc.aiReason}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Card Footer Actions -->
+                    <div>
+                        <div class="flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-700/60 pt-3 mb-3 light:border-slate-200">
+                            <span class="flex items-center gap-1">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i> ${doc.downloads} lượt tải
+                            </span>
+                            <span class="flex items-center gap-1 text-amber-400 font-semibold">
+                                <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400"></i> ${doc.rating}
+                            </span>
+                            <span class="text-slate-500">${doc.format}</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="handleAction('like', ${doc.id})" class="px-3 py-1.5 rounded-xl border border-slate-700 bg-slate-900/60 text-slate-300 hover:text-rose-400 hover:border-rose-500/50 text-xs font-medium transition-all flex items-center justify-center gap-1.5 light:bg-slate-100 light:border-slate-300 light:text-slate-700">
+                                <i data-lucide="heart" class="w-3.5 h-3.5"></i> <span id="likeCount-${doc.id}">${doc.likes}</span>
+                            </button>
+                            <button onclick="handleAction('download', ${doc.id})" class="px-3 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-medium transition-all flex items-center justify-center gap-1.5 shadow">
+                                <i data-lucide="arrow-down-to-line" class="w-3.5 h-3.5"></i> Tải về ngay
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        // Live Search Input Listener
+        document.getElementById('searchInput').addEventListener('input', () => {
+            renderDocuments();
+        });
+
+        // Filter Tabs Logic
+        function filterType(type) {
+            currentFilterType = type;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-600', 'text-white', 'shadow');
+                btn.classList.add('text-slate-300');
+            });
+            event.target.classList.add('bg-brand-600', 'text-white', 'shadow');
+            event.target.classList.remove('text-slate-300');
+            renderDocuments();
+            addLog(`Lọc danh mục tài liệu -> [${type}]`);
+        }
+
+        // --- User Actions Simulation ---
+        function handleAction(actionType, docId) {
+            const doc = documents.find(d => d.id === docId);
+            if (!doc) return;
+
+            totalInteractions++;
+            document.getElementById('statInteractions').textContent = totalInteractions;
+
+            if (actionType === 'like') {
+                doc.likes++;
+                document.getElementById(`likeCount-${docId}`).textContent = doc.likes;
+                showToast("Đã thích tài liệu!", `Bạn đã thả tim cho: ${doc.title}`);
+                addLog(`[User Action] LIKED: "${doc.title}" (+ Tăng điểm tương đồng môn ${doc.subject})`);
+            } else if (actionType === 'download') {
+                doc.downloads++;
+                showToast("Bắt đầu tải xuống...", `Đang tải: ${doc.title} (${doc.format})`);
+                addLog(`[User Action] DOWNLOADED: "${doc.title}" -> Hệ thống lưu log nhu cầu học môn ${doc.subject}`);
+            }
+
+            // Trigger AI recalculation
+            renderDocuments();
+        }
+
+        function toggleBookmark(docId) {
+            const doc = documents.find(d => d.id === docId);
+            if (!doc) return;
+
+            doc.bookmarked = !doc.bookmarked;
+            totalInteractions++;
+            document.getElementById('statInteractions').textContent = totalInteractions;
+
+            if (doc.bookmarked) {
+                showToast("Đã lưu Bookmark", `Tài liệu đã được lưu vào tủ sách cá nhân.`);
+                addLog(`[User Action] BOOKMARKED: "${doc.title}" -> AI nâng trọng số ưu tiên môn ${doc.subject} lên +15%`);
+            } else {
+                showToast("Đã hủy Bookmark", `Đã xóa tài liệu khỏi danh sách lưu.`);
+                addLog(`[User Action] UN-BOOKMARKED: "${doc.title}"`);
+            }
+
+            renderDocuments();
+        }
+
+        // --- Render Peer Exchange Books ---
+        function renderExchangeBooks() {
+            const grid = document.getElementById('exchangeGrid');
+            grid.innerHTML = exchangeBooks.map(book => `
+                <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 shadow-md flex flex-col justify-between hover:border-emerald-500/50 transition-all light:bg-white light:border-slate-200">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                ${book.mode}
+                            </span>
+                            <span class="text-[10px] text-slate-400">${book.time}</span>
+                        </div>
+
+                        <h4 class="font-bold text-xs text-slate-100 mb-1 line-clamp-2 light:text-slate-800">${book.title}</h4>
+                        <p class="text-[11px] text-slate-400 mb-1">Người đăng: <span class="text-slate-300 light:text-slate-700">${book.owner}</span></p>
+                        <p class="text-[11px] text-slate-400 mb-2">Tình trạng: <span class="text-amber-400">${book.condition}</span></p>
+                    </div>
+
+                    <div class="border-t border-slate-700/60 pt-2.5 mt-2 light:border-slate-200">
+                        <p class="text-[10px] text-slate-400 truncate mb-2">Liên hệ: ${book.contact}</p>
+                        <button onclick="requestExchange('${book.title}', '${book.owner}')" class="w-full py-1.5 bg-slate-700 hover:bg-emerald-600 hover:text-white text-slate-200 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1">
+                            <i data-lucide="message-square" class="w-3.5 h-3.5"></i> Nhắn tin xin đổi sách
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function requestExchange(title, owner) {
+            showToast("Đã gửi yêu cầu!", `Hệ thống đã kết nối bạn với ${owner} để nhận sách "${title}".`);
+            addLog(`[Exchange Request] Sinh viên đăng ký trao đổi sách: ${title}`);
+        }
+
+        // --- Modals Logic ---
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function handleUploadSubmit(e) {
+            e.preventDefault();
+            const title = document.getElementById('upTitle').value;
+            const major = document.getElementById('upMajor').value;
+            const type = document.getElementById('upType').value;
+            const subject = document.getElementById('upSubject').value;
+
+            const newDoc = {
+                id: Date.now(),
+                title: title,
+                author: "Sinh viên đóng góp",
+                uploader: "Bạn (Phiên hiện tại)",
+                major: major,
+                subject: subject,
+                type: type,
+                format: "PDF (Vừa tải lên)",
+                downloads: 1,
+                rating: 5.0,
+                baseScore: 95,
+                aiReason: "Tài liệu mới đóng góp gần đây bởi bạn. AI đang phân tích từ khóa...",
+                bookmarked: true,
+                likes: 1
+            };
+
+            documents.unshift(newDoc);
+            closeModal('uploadModal');
+            renderDocuments();
+            showToast("Tải lên thành công!", `Tài liệu "${title}" đã được AI phân loại vào môn ${subject}.`);
+            addLog(`[User Upload] Tải lên tài liệu mới: "${title}" -> AI tự động gắn thẻ ngành ${major}`);
+            
+            // Reset Form
+            e.target.reset();
+        }
+
+        function handleExchangeSubmit(e) {
+            e.preventDefault();
+            const title = document.getElementById('exTitle').value;
+            const condition = document.getElementById('exCondition').value;
+            const mode = document.getElementById('exMode').value;
+            const contact = document.getElementById('exContact').value;
+
+            const newExchange = {
+                id: Date.now(),
+                title: title,
+                owner: "Bạn (Vừa đăng)",
+                major: document.getElementById('selectMajor').value,
+                condition: condition,
+                mode: mode,
+                contact: contact,
+                time: "Vừa xong"
+            };
+
+            exchangeBooks.unshift(newExchange);
+            closeModal('exchangeModal');
+            renderExchangeBooks();
+            showToast("Đăng bài thành công!", "Sách của bạn đã hiển thị trên Chợ trao đổi sách 0đ.");
+            addLog(`[P2P Exchange] Đăng sách mới cần chuyền tay: "${title}"`);
+            
+            e.target.reset();
+        }
+
+        // --- Helper Utilities ---
+        function addCourseTag() {
+            const course = prompt("Nhập tên môn học bạn muốn bổ sung ưu tiên AI:");
+            if (course) {
+                showToast("Đã thêm môn học", `AI sẽ ưu tiên gợi ý các tài liệu môn ${course}.`);
+                addLog(`[Tag Update] Thêm môn học ưu tiên: ${course}`);
+            }
+        }
+
+        function addLog(message) {
+            const consoleBox = document.getElementById('logConsole');
+            const time = new Date().toLocaleTimeString();
+            const logItem = document.createElement('div');
+            logItem.className = 'text-slate-300 py-0.5 border-b border-slate-800/40';
+            logItem.innerHTML = `<span class="text-cyan-400">[${time}]</span> ${message}`;
+            consoleBox.prepend(logItem);
+        }
+
+        function clearLogs() {
+            document.getElementById('logConsole').innerHTML = '<div class="text-slate-500">// Đã xóa nhật ký tương tác.</div>';
+        }
+
+        function showToast(title, msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastMsg').textContent = msg;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
