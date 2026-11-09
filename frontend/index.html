@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduShare</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: '#eff6ff',
+                100: '#dbeafe',
+                500: '#3b82f6',
+                600: '#2563eb',
+                700: '#1d4ed8',
+                800: '#1e40af',
+                900: '#1e3a8a',
+              },
+              tech: {
+                dark: '#0f172a',
+                card: '#1e293b',
+                border: '#334155',
+                accent: '#06b6d4',
+              }
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            }
+          }
+        }
+      };
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/style.css" />
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="./js/api.js" defer></script>
+    <script src="./js/ui.js" defer></script>
+    <script src="./js/main.js" defer></script>
+  </head>
+
+  <body class="bg-slate-950 text-slate-100 antialiased">
+    <div class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <header class="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur">
+        <div class="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600/20 text-brand-400 ring-1 ring-brand-500/50">
+                <i data-lucide="graduation-cap" class="h-5 w-5"></i>
+              </div>
+              <div>
+                <p class="text-xs uppercase tracking-[0.2em] text-slate-400">EdShare</p>
+                <h1 class="text-lg font-bold text-white">Thư viện trực tuyến</h1>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <button id="themeToggleBtn" type="button" class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800">
+                <i id="sunIcon" data-lucide="sun" class="h-5 w-5"></i>
+                <i id="moonIcon" data-lucide="moon" class="hidden h-5 w-5"></i>
+              </button>
+
+              <div id="authControls" class="flex items-center gap-2"></div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <div class="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)_320px]">
+          <aside class="space-y-6">
+            <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 shadow-xl">
+              <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-sm font-semibold text-slate-200">Hồ sơ học tập</h2>
+                <span id="userMajorBadge" class="rounded-full bg-brand-500/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-brand-300">CNTT</span>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <label for="selectMajor" class="mb-1 block text-xs font-medium text-slate-400">Ngành</label>
+                  <select id="selectMajor" class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 focus:border-brand-500 focus:outline-none">
+    <option value="Kỹ thuật Mỏ">Kỹ thuật Mỏ</option>
+    <option value="Kỹ thuật Xây dựng">Kỹ thuật Xây dựng</option>
+    <option value="Kỹ thuật Cơ khí">Kỹ thuật Cơ khí</option>
+    <option value="Kỹ thuật Robot">Kỹ thuật Robot</option>
+    <option value="Kỹ thuật Cơ điện tử">Kỹ thuật Cơ điện tử</option>
+    <option value="Kỹ thuật Cơ khí động lực">Kỹ thuật Cơ khí động lực</option>
+    <option value="Kỹ thuật Ô tô">Kỹ thuật Ô tô</option>
+    <option value="Kỹ thuật Điện">Kỹ thuật Điện</option>
+    <option value="Công nghệ kỹ thuật điện, điện tử">Công nghệ kỹ thuật điện, điện tử</option>
+    <option value="Kỹ thuật Điều khiển và Tự động hóa">Kỹ thuật Điều khiển và Tự động hóa</option>
+    <option value="Kỹ thuật Trắc địa – Bản đồ">Kỹ thuật Trắc địa – Bản đồ</option>
+    <option value="Kỹ thuật Không gian">Kỹ thuật Không gian</option>
+    <option value="Kỹ thuật Địa chất">Kỹ thuật Địa chất</option>
+    <option value="Kỹ thuật Dầu khí">Kỹ thuật Dầu khí</option>
+    <option value="Kỹ thuật Hóa học">Kỹ thuật Hóa học</option>
+    <option value="Kỹ thuật Vật liệu">Kỹ thuật Vật liệu</option>
+    <option value="Kỹ thuật Môi trường">Kỹ thuật Môi trường</option>
+    <option value="Kỹ thuật Tài nguyên nước">Kỹ thuật Tài nguyên nước</option>
+    <option value="Kỹ thuật Xây dựng công trình ngầm">Kỹ thuật Xây dựng công trình ngầm</option>
+    <option value="Công nghệ thông tin">Công nghệ thông tin</option>
+    <option value="Khoa học dữ liệu">Khoa học dữ liệu</option>
+</select>
+                    
+    
+</select>
+                </div>
+
+                <div>
+                  <label for="selectGoal" class="mb-1 block text-xs font-medium text-slate-400">Mục tiêu học tập</label>
+                  <select id="selectGoal" class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-200 focus:border-brand-500 focus:outline-none">
+                    <option value="thi cuối kỳ">Thi cuối kỳ</option>
+                    <option value="ôn tập chuyên sâu">Ôn tập chuyên sâu</option>
+                    <option value="tự học">Tự học</option>
+                    <option value="đồ án">Đồ án</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 shadow-xl">
+              <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-sm font-semibold text-slate-200">Mức độ phù hợp</h2>
+                <button type="button" onclick="resetSliders()" class="text-[11px] text-brand-300 hover:text-brand-200">Reset</button>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <div class="mb-2 flex items-center justify-between">
+                    <label for="sliderMajor" class="text-xs text-slate-300">Ngành</label>
+                    <span id="weightMajorVal" class="text-xs font-semibold text-brand-300">80%</span>
+                  </div>
+                  <input id="sliderMajor" type="range" min="0" max="100" value="80" class="w-full accent-brand-500" onchange="onWeightChange()" />
+                </div>
+
+                <div>
+                  <div class="mb-2 flex items-center justify-between">
+                    <label for="sliderPopularity" class="text-xs text-slate-300">Độ phổ biến</label>
+                    <span id="weightPopularityVal" class="text-xs font-semibold text-brand-300">65%</span>
+                  </div>
+                  <input id="sliderPopularity" type="range" min="0" max="100" value="65" class="w-full accent-brand-500" onchange="onWeightChange()" />
+                </div>
+
+                <div>
+                  <div class="mb-2 flex items-center justify-between">
+                    <label for="sliderHistory" class="text-xs text-slate-300">Lịch sử tương tác</label>
+                    <span id="weightHistoryVal" class="text-xs font-semibold text-brand-300">90%</span>
+                  </div>
+                  <input id="sliderHistory" type="range" min="0" max="100" value="90" class="w-full accent-brand-500" onchange="onWeightChange()" />
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <main class="space-y-6">
+            <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 shadow-xl">
+              <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div class="flex-1">
+                  <label for="searchInput" class="mb-2 block text-xs uppercase tracking-[0.2em] text-slate-400">Tìm tài liệu</label>
+                  <div class="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-950 px-3 py-2">
+                    <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
+                    <input id="searchInput" type="text" placeholder="Tìm theo tên, môn học, ngành..." class="w-full bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none" />
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <button type="button" onclick="openModal('uploadModal')" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500">
+                    <i data-lucide="upload" class="h-4 w-4"></i>
+                    Tải lên
+                  </button>
+                </div>
+              </div>
+
+              <div class="mt-4 flex flex-wrap items-center gap-2">
+                <button type="button" class="tab-btn rounded-xl border border-slate-700 bg-brand-600 px-3 py-2 text-xs font-medium text-white shadow active" onclick="filterType('all')" data-type="all">Tất cả</button>
+                <button type="button" class="tab-btn rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800" onclick="filterType('giao-trinh')">Giáo trình</button>
+                <button type="button" class="tab-btn rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800" onclick="filterType('slide')">Slide</button>
+                <button type="button" class="tab-btn rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800" onclick="filterType('de-thi')">Đề thi</button>
+              </div>
+            </div>
+
+            <div id="documentGrid" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"></div>
+          </main>
+
+          <aside class="space-y-6">
+            <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 shadow-xl">
+              <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-sm font-semibold text-slate-200">Thống kê</h2>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div class="rounded-xl border border-slate-700 bg-slate-950/60 p-3">
+                  <p class="text-[10px] uppercase tracking-[0.2em] text-slate-400">Tương tác</p>
+                  <p id="statInteractions" class="mt-2 text-2xl font-bold text-brand-300">0</p>
+                </div>
+
+                <div class="rounded-xl border border-slate-700 bg-slate-950/60 p-3">
+                  <p class="text-[10px] uppercase tracking-[0.2em] text-slate-400">Thư viện</p>
+                  <p class="mt-2 text-2xl font-bold text-emerald-300">6</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 shadow-xl">
+              <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-sm font-semibold text-slate-200">Chợ trao đổi sách</h2>
+                <button type="button" onclick="openModal('exchangeModal')" class="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[10px] font-semibold text-emerald-300">Đăng sách</button>
+              </div>
+              <div id="exchangeGrid" class="space-y-3"></div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 shadow-xl">
+              <div class="mb-3 flex items-center justify-between">
+                <h2 class="text-sm font-semibold text-slate-200">Log hệ thống</h2>
+                <button type="button" onclick="clearLogs()" class="text-[10px] uppercase tracking-wide text-slate-400 hover:text-slate-200">Clear</button>
+              </div>
+              <div id="logConsole" class="custom-scrollbar max-h-64 space-y-1 overflow-auto"></div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="pointer-events-none fixed bottom-5 right-5 z-50 translate-y-20 opacity-0 transition-all duration-300">
+      <div class="min-w-[260px] rounded-2xl border border-slate-700 bg-slate-900/95 p-3 shadow-2xl">
+        <p id="toastTitle" class="text-sm font-semibold text-white">Thông báo</p>
+        <p id="toastMsg" class="mt-1 text-xs text-slate-300">Nội dung</p>
+      </div>
+    </div>
+
+    <div id="uploadModal" class="fixed inset-0 z-40 hidden bg-slate-950/70 backdrop-blur-sm">
+      <div class="flex min-h-full items-center justify-center p-4">
+        <div class="w-full max-w-lg rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl">
+          <div class="mb-4 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-white">Tải tài liệu lên</h3>
+            <button type="button" onclick="closeModal('uploadModal')" class="text-slate-400 hover:text-white">
+              <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+          </div>
+
+          <form id="uploadForm" onsubmit="handleUploadSubmit(event)" class="space-y-4">
+            <div>
+              <label for="upTitle" class="mb-1 block text-xs text-slate-400">Tên tài liệu</label>
+              <input id="upTitle" type="text" required class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
+            </div>
+
+            <div>
+              <label for="upMajor" class="mb-1 block text-xs text-slate-400">Ngành</label>
+              <select id="upMajor" class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none">
+                <option value="Kỹ thuật Mỏ">Kỹ thuật Mỏ</option>
+    <option value="Kỹ thuật Xây dựng">Kỹ thuật Xây dựng</option>
+    <option value="Kỹ thuật Cơ khí">Kỹ thuật Cơ khí</option>
+    <option value="Kỹ thuật Robot">Kỹ thuật Robot</option>
+    <option value="Kỹ thuật Cơ điện tử">Kỹ thuật Cơ điện tử</option>
+    <option value="Kỹ thuật Cơ khí động lực">Kỹ thuật Cơ khí động lực</option>
+    <option value="Kỹ thuật Ô tô">Kỹ thuật Ô tô</option>
+    <option value="Kỹ thuật Điện">Kỹ thuật Điện</option>
+    <option value="Công nghệ kỹ thuật điện, điện tử">Công nghệ kỹ thuật điện, điện tử</option>
+    <option value="Kỹ thuật Điều khiển và Tự động hóa">Kỹ thuật Điều khiển và Tự động hóa</option>
+    <option value="Kỹ thuật Trắc địa – Bản đồ">Kỹ thuật Trắc địa – Bản đồ</option>
+    <option value="Kỹ thuật Không gian">Kỹ thuật Không gian</option>
+    <option value="Kỹ thuật Địa chất">Kỹ thuật Địa chất</option>
+    <option value="Kỹ thuật Dầu khí">Kỹ thuật Dầu khí</option>
+    <option value="Kỹ thuật Hóa học">Kỹ thuật Hóa học</option>
+    <option value="Kỹ thuật Vật liệu">Kỹ thuật Vật liệu</option>
+    <option value="Kỹ thuật Môi trường">Kỹ thuật Môi trường</option>
+    <option value="Kỹ thuật Tài nguyên nước">Kỹ thuật Tài nguyên nước</option>
+    <option value="Kỹ thuật Xây dựng công trình ngầm">Kỹ thuật Xây dựng công trình ngầm</option>
+    <option value="Trí tuệ nhân tạo ứng dụng">Trí tuệ nhân tạo ứng dụng</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="upType" class="mb-1 block text-xs text-slate-400">Loại tài liệu</label>
+              <select id="upType" class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none">
+                <option value="giao-trinh">Giáo trình</option>
+                <option value="slide">Slide</option>
+                <option value="de-thi">Đề thi</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="upSubject" class="mb-1 block text-xs text-slate-400">Môn học</label>
+              <input id="upSubject" type="text" required class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2">
+              <button type="button" onclick="closeModal('uploadModal')" class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300">Hủy</button>
+              <button type="submit" class="rounded-xl bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500">Đăng tài liệu</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="exchangeModal" class="fixed inset-0 z-40 hidden bg-slate-950/70 backdrop-blur-sm">
+      <div class="flex min-h-full items-center justify-center p-4">
+        <div class="w-full max-w-lg rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl">
+          <div class="mb-4 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-white">Đăng sách trao đổi</h3>
+            <button type="button" onclick="closeModal('exchangeModal')" class="text-slate-400 hover:text-white">
+              <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+          </div>
+
+          <form id="exchangeForm" onsubmit="handleExchangeSubmit(event)" class="space-y-4">
+            <div>
+              <label for="exTitle" class="mb-1 block text-xs text-slate-400">Tên sách</label>
+              <input id="exTitle" type="text" required class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
+            </div>
+
+            <div>
+              <label for="exCondition" class="mb-1 block text-xs text-slate-400">Tình trạng</label>
+              <input id="exCondition" type="text" value="Mới 95%" class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
+            </div>
+
+            <div>
+              <label for="exMode" class="mb-1 block text-xs text-slate-400">Hình thức</label>
+              <select id="exMode" class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none">
+                <option value="Tặng 0đ">Tặng</option>
+                <option value="Đổi lấy sách khác">Đổi lấy sách khác</option>
+                <option value="Nhượng ">Trao đổi</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="exContact" class="mb-1 block text-xs text-slate-400">Liên hệ</label>
+              <input id="exContact" type="text" required class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2">
+              <button type="button" onclick="closeModal('exchangeModal')" class="rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300">Hủy</button>
+              <button type="submit" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500">Đăng sách</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="authModal" class="fixed inset-0 z-40 hidden bg-slate-950/70 backdrop-blur-sm">
+      <div class="flex min-h-full items-center justify-center p-4">
+        <div class="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl">
+          <div class="mb-4 flex items-center justify-between">
+            <h3 id="authModalTitle" class="text-lg font-semibold text-white">Đăng nhập EduShare</h3>
+            <button type="button" onclick="closeModal('authModal')" class="text-slate-400 hover:text-white">
+              <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+          </div>
+
+          <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+            <div id="authNameField" class="hidden">
+              <label for="authDisplayName" class="mb-1 block text-xs text-slate-400">Tên hiển thị</label>
+              <input id="authDisplayName" type="text" class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
+            </div>
+
+            <div>
+              <label for="authEmail" class="mb-1 block text-xs text-slate-400">Email</label>
+              <input id="authEmail" type="email" required class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
+            </div>
+
+            <div>
+              <label for="authPassword" class="mb-1 block text-xs text-slate-400">Mật khẩu</label>
+              <input id="authPassword" type="password" required class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-brand-500 focus:outline-none" />
+              <p id="authPasswordHint" class="mt-1 hidden text-[11px] text-slate-400">Mật khẩu tối thiểu 8 ký tự.</p>
+            </div>
+
+            <div id="authError" class="hidden rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300"></div>
+
+            <button id="authSubmitButton" type="submit" class="w-full rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-500">
+              Đăng nhập
+            </button>
+
+            <button id="authModeToggle" type="button" onclick="toggleAuthMode()" class="w-full text-center text-xs text-slate-300 hover:text-white">
+              Chưa có tài khoản? Đăng ký
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      lucide.createIcons();
+    </script>
+  </body>
+</html>
