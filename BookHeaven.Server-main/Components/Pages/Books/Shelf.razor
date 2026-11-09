@@ -1,0 +1,269 @@
+﻿@attribute [Route(Urls.Shelf)]
+@attribute [Route($"{Urls.Collection}/{{CollectionId:guid}}")]
+
+@using BookHeaven.Core.Abstractions
+@using BookHeaven.Core.Entities.Base
+@using BookHeaven.Core.Features.Books
+@using BookHeaven.Core.Features.Collections
+@using BookHeaven.Server.Features.Session.Abstractions
+@implements IDisposable
+
+<PageTitle>@Translations.SHELF</PageTitle>
+
+<ScrollToTop />
+
+@if (IsLoading)
+{
+	<BookGrid 
+		IsLoading="true"
+		Center="true"/>
+	return;
+}
+
+@if (BookManager.IsEmpty)
+{
+	<div class="absolute inset-0 flex items-center justify-center text-center">
+		<span class="text-2xl 2xl:text-4xl text-balance text-neutral-300">@Translations.SHELF_EMPTY</span>
+	</div>
+	return;
+}
+
+<Topbar>
+	@if (CollectionId == Guid.Empty)
+	{
+		<MudChipSet T="BookStatus" @bind-SelectedValue="BookManager.Filter" @bind-SelectedValue:after="DeselectAllBooks" Class="ms-2" CheckMark>
+			<MudChip Value="BookStatus.All" Variant="Variant.Text" Color="Color.Primary" Class="mx-0.5">@BookStatus.All.StringValue()</MudChip>
+			<MudChip Value="BookStatus.New" Variant="Variant.Text" Color="Color.Primary" Class="mx-0.5">@BookStatus.New.StringValue()</MudChip>
+			<MudChip Value="BookStatus.Reading" Variant="Variant.Text" Color="Color.Primary" Class="mx-0.5">@BookStatus.Reading.StringValue()</MudChip>
+			<MudChip Value="BookStatus.Finished" Variant="Variant.Text" Color="Color.Primary" Class="mx-0.5">@BookStatus.Finished.StringValue()</MudChip>
+		</MudChipSet>
+	}
+	else
+	{
+		<div class="text-xl sm:text-2xl ms-2">
+			<span>Collection:</span>
+			<span class="text-nowrap text-(--mud-palette-primary)">@BookManager.CurrentCollection!.Name</span>
+		</div>
+		<MudSpacer />
+		<MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Href="@Urls.GetCollectionPageUrl(BookManager.CurrentCollection!.CollectionId)"/>
+	}
+</Topbar>
+
+@if (BookManager.Books.Count > 0)
+{
+	<BookGrid 
+		Books="@BookManager.Books" 
+		Center="true"
+		IsSelectMode="IsSelectMode"
+		@bind-SelectedBooks="_selectedBooks"/>
+
+	if (CollectionId == Guid.Empty)
+	{
+		<BottomToolbar>
+			@if (!IsSelectMode)
+			{
+				<MudButton
+					OnClick="ToggleSelectMode"
+					StartIcon="@Icons.Material.Filled.SelectAll"
+					Color="Color.Secondary"
+					IconSize="Size.Large"
+					Size="Size.Large">
+					Select mode
+				</MudButton>
+			}
+			else
+			{
+				<MudIconButton 
+					OnClick="ToggleSelectMode"
+					Icon="@Icons.Material.Filled.Deselect"
+					Color="Color.Secondary"/>
+				<MudIconButton 
+					OnClick="() => SelectIconAction.Invoke()"
+					Icon="@SelectIcon"
+					Variant="Variant.Filled" />
+				<MudButton
+					OnClick="OpenTagsDialog"
+					Color="Color.Primary"
+					Disabled="_selectedBooks.Count == 0">
+					Tags
+				</MudButton>
+				<MudButton
+					Color="Color.Primary"
+					Disabled="true">
+					Edit
+				</MudButton>
+				<MudButton
+					OnClick="@DeleteBooks"
+					Color="Color.Error"
+					Disabled="_selectedBooks.Count == 0">
+					Delete
+				</MudButton>
+				<MudSpacer/>
+			
+				<span class="ms-auto text-nowrap font-bold">@_selectedBooks.Count selected</span>
+			}
+		</BottomToolbar>
+	}
+}
+else
+{
+	<div class="absolute inset-0 flex items-center justify-center text-center">
+		<span class="text-2xl 2xl:text-4xl text-balance text-neutral-300">@Translations.SHELF_FILTER_NO_RESULTS</span>
+	</div>
+}
+
+
+@code {
+	[Inject] private NavigationManager NavigationManager { get; set; } = null!;
+	[Inject] private IJSRuntime JsRuntime { get; set; } = null!;
+	[Inject] private BookManager BookManager { get; set; } = null!;
+	[Inject] private ISessionService SessionService { get; set; } = null!;
+	[Inject] private GlobalEventsService GlobalEventsService { get; set; } = null!;
+	[Inject] private IAlertService AlertService { get; set; } = null!;
+	[Inject] private IDialogService DialogService { get; set; } = null!;
+	[Inject] private ISnackbar Snackbar { get; set; } = null!;
+	[Inject] private ISender Sender { get; set; } = null!;
+	
+	[Parameter] public Guid CollectionId { get; set; } = Guid.Empty;
+	
+	private bool IsLoading { get; set; } = true;
+	private Guid ProfileId { get; set; }
+	
+	private bool IsSelectMode { get; set; }
+	private List<Guid> _selectedBooks = [];
+	private string SelectIcon => _selectedBooks.Count switch
+	{
+		0 => Icons.Material.Filled.CheckBoxOutlineBlank,
+		_ when _selectedBooks.Count == BookManager.Books.Count => Icons.Material.Filled.CheckBox,
+		_ => Icons.Material.Filled.IndeterminateCheckBox
+	};
+	
+	private Action SelectIconAction => _selectedBooks.Count switch
+	{
+		0 => SelectAllBooks,
+		_ when _selectedBooks.Count == BookManager.Books.Count => DeselectAllBooks,
+		_ => SelectAllBooks
+	};
+	
+
+	protected override async Task OnInitializedAsync()
+	{
+		GlobalEventsService.Subscribe<BookAdded>(OnBookAdded);
+		GlobalEventsService.Subscribe<BookDeleted>(OnBookDeleted);
+
+		ProfileId = await SessionService.GetAsync<Guid>(SessionKey.SelectedProfileId);
+	}
+
+	protected override async Task OnParametersSetAsync()
+	{
+		IsLoading = true;
+		if (CollectionId != Guid.Empty)
+		{
+			BookManager.Filter = BookStatus.All;
+			var getCollection = await Sender.Send(new GetCollectionById.Query(CollectionId));
+			if (getCollection.IsFailure)
+			{
+				NavigationManager.NavigateTo(Urls.Shelf);
+				return;
+			}
+			IsSelectMode = false;
+			BookManager.CurrentCollection = getCollection.Value;
+		}
+		else
+		{
+			BookManager.CurrentCollection = null;
+		}
+		await BookManager.GetBooksAsync(ProfileId);
+		DeselectAllBooks();
+		IsLoading = false;
+	}
+
+	private async Task OnBookAdded(BookAdded e)
+	{
+		await BookManager.AppendBookAsync(ProfileId, e.BookId);
+		await InvokeAsync(StateHasChanged);
+	}
+	
+	private async Task OnBookDeleted(BookDeleted e)
+	{
+		BookManager.RemoveBook(e.BookId);
+		DeselectBook(e.BookId);
+		await InvokeAsync(StateHasChanged);
+	}
+
+	private void ToggleSelectMode()
+	{
+		IsSelectMode = !IsSelectMode;
+		if (!IsSelectMode)
+		{
+			_selectedBooks.Clear();
+		}
+	}
+	
+	private void SelectAllBooks()
+	{
+		_selectedBooks.Clear();
+		_selectedBooks.AddRange(BookManager.Books.Select(b => b.BookId));
+	}
+	
+	private void DeselectAllBooks()
+	{
+		_selectedBooks.Clear();
+	}
+	
+	private void DeselectBook(Guid bookId)
+	{
+		_selectedBooks.Remove(bookId);
+	}
+	
+	private async Task OpenTagsDialog()
+	{
+		var parameters = new DialogParameters
+		{
+			{ nameof(BulkTagsEditDialog.BookIds), _selectedBooks }
+		};
+		var dialog = await DialogService.ShowAsync<BulkTagsEditDialog>(null, parameters);
+		var result = await dialog.Result;
+
+		if (!result!.Canceled)
+		{
+			// Handle result if needed
+		}
+	}
+	
+	/*private async Task OpenMetadataDialog()
+	{
+		var parameters = new DialogParameters
+		{
+			{ nameof(BulkMetadataEditDialog.BookIds), _selectedBooks }
+		};
+		
+		var dialog = await DialogService.ShowAsync<BulkMetadataEditDialog>(null, parameters);
+		var result = await dialog.Result;
+	}*/
+
+	private async Task DeleteBooks()
+	{
+		var result = await AlertService.ShowConfirmationAsync(
+			"Delete Books", 
+			$"You are about to delete {_selectedBooks.Count} book{(_selectedBooks.Count > 1 ? "s" : "")}.<br/>This will delete the progress for all profiles.<br/><br/>The books won't be removed from your devices but you won't be able to sync their progress anymore.<br/><br/>This action cannot be undone!", 
+			accept: "Delete", 
+			cancel: "Cancel");
+		if(!result) return;
+		
+		foreach (var selectedBook in _selectedBooks)
+		{
+			await Sender.Send(new DeleteBook.Command(selectedBook));
+		}
+		
+		_selectedBooks.Clear();
+	}
+
+	public void Dispose()
+	{
+		GlobalEventsService.Unsubscribe<BookAdded>(OnBookAdded);
+		GlobalEventsService.Unsubscribe<BookDeleted>(OnBookDeleted);
+		JsRuntime.InvokeVoidAsync("saveScrollPosition", Urls.Shelf);
+	}
+
+}

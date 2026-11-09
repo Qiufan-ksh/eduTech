@@ -1,0 +1,34 @@
+﻿using BookHeaven.Core.Features.Authors;
+using BookHeaven.Server.Features.Api.Abstractions;
+
+namespace BookHeaven.Server.Features.Api.Endpoints.Authors;
+
+public static class ApiGetAuthors
+{
+    public class Endpoint : IEndpoint
+    {
+        public void MapEndpoint(IEndpointRouteBuilder app)
+        {
+            app.MapGet("/authors", ApiHandler)
+                .WithName("GetAuthors")
+                .WithTags("Authors")
+                .WithSummary("Get all authors")
+                .WithDescription("Retrieves a list of all authors in the system.")
+                .Produces<List<Author>>()
+                .ProducesProblem(StatusCodes.Status500InternalServerError);
+        }
+
+        private static async Task<IResult> ApiHandler(
+            ISender sender,
+            ILogger<Endpoint> logger)
+        {
+            var getAuthors = await sender.Send(new GetAllAuthors.Query());
+            if (getAuthors.IsSuccess)
+            {
+                return Results.Ok(getAuthors.Value);
+            }
+            logger.LogError(getAuthors.Error.Description);
+            return Results.Problem(getAuthors.Error.Description);
+        }
+    }
+}

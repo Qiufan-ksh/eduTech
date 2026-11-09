@@ -1,0 +1,16 @@
+﻿dt, dd {
+    margin: 0;
+}
+
+dt {
+    text-transform: uppercase;
+    color: var(--mud-palette-text-secondary);
+}
+
+#progress-bar {
+    background-color: var(--mud-palette-secondary);
+}
+
+#progress-bar > div {
+    background-color: var(--mud-palette-primary);
+}

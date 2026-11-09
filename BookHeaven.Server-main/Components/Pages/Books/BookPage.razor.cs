@@ -1,0 +1,318 @@
+using BookHeaven.Core.Abstractions;
+using BookHeaven.Core.Features.Authors;
+using BookHeaven.Core.Features.Books;
+using BookHeaven.Core.Features.BookSeries;
+using BookHeaven.Core.Features.BooksProgress;
+using BookHeaven.Core.Features.Tags;
+using BookHeaven.EbookManager;
+using BookHeaven.EbookManager.Entities;
+using BookHeaven.EbookManager.Enums;
+using BookHeaven.Server.Constants;
+using BookHeaven.Server.Components.Dialogs;
+using BookHeaven.Server.Features.Metadata.DTOs;
+using BookHeaven.Server.Features.Session.Abstractions;
+using BookHeaven.Server.Features.Settings.Abstractions;
+using BookHeaven.Server.Features.Settings.DTOs;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
+
+namespace BookHeaven.Server.Components.Pages.Books;
+
+public partial class BookPage
+{
+	[Inject] private ISender Sender { get; set; } = null!;
+	[Inject] private EbookManagerProvider EbookManagerProvider { get; set; } = null!;
+	[Inject] private NavigationManager NavigationManager { get; set; } = null!;
+	[Inject] private ISettingsManagerService SettingsManager { get; set; } = null!;
+	[Inject] private ISessionService SessionService { get; set; } = null!;
+	[Inject] private IDialogService DialogService { get; set; } = null!;
+	[Inject] private IAlertService AlertService { get; set; } = null!;
+
+	[Parameter] public Guid Id { get; set; }
+
+	private Guid _profileId;
+	private ServerSettings _settings = new();
+
+	private bool _addingTags;
+	private string _tagNames = string.Empty;
+
+	private bool IsEditing { get; set; }
+
+	private bool CoverExists => File.Exists(_book.CoverPath());
+
+	private Book _book = new();
+	private List<Author> _authors = [];
+	private List<Series> _series = [];
+	
+
+	private string? _newCoverTempPath;
+	private string? _newEpubTempPath;
+
+	private string? _authorName;
+	private string? _seriesName;
+
+	private readonly IConverter<TimeSpan, string?> _timeReadConverter = Conversions
+			.From(
+				(TimeSpan value) => $"{(int)value.TotalHours:00}:{value.Minutes:00}",
+				text => new(int.Parse(text.Split(":")[0]), int.Parse(text.Split(":")[1]), 0)
+			);
+
+	protected override async Task OnInitializedAsync()
+	{
+		_settings = await SettingsManager.LoadSettingsAsync();
+		_profileId = await SessionService.GetAsync<Guid>(SessionKey.SelectedProfileId);
+	}
+
+	protected override async Task OnParametersSetAsync()
+	{
+		if (_book.BookId == Guid.Empty || Id != _book.BookId)
+		{
+			var getAuthors = await Sender.Send(new GetAllAuthors.Query());
+			_authors = getAuthors.Value;
+				
+			var getSeries = await Sender.Send(new GetAllSeries.Query());
+			_series = getSeries.Value;
+
+			await LoadBook();
+		}
+	}
+
+	private void EnableEditing()
+	{
+		IsEditing = true;
+		StateHasChanged();
+	}
+
+	private async Task DisableEditing(bool revertChanges = false)
+	{
+		_newCoverTempPath = null;
+		_newEpubTempPath = null;
+		if (revertChanges)
+		{
+			await LoadBook();
+		}
+		IsEditing = false;
+		StateHasChanged();
+	}
+
+	private async Task DeleteBook()
+	{
+		var result = await AlertService.ShowConfirmationAsync(
+			"Delete book",
+			$"Are you sure you want to delete this book?<br/><br/>This will remove the progress for all profiles.<br/>The book won't be removed from your devices but you won't be able to sync its progress anymore.<br/><br/>This action cannot be undone!",
+			"Yes", "Cancel");
+		
+		if (!result) return;
+
+		var deleteBook = await Sender.Send(new DeleteBook.Command(_book.BookId));
+
+		if (deleteBook.IsFailure)
+		{
+			await AlertService.ShowToastAsync(deleteBook.Error.Description);
+			return;
+		}
+		await AlertService.ShowToastAsync(Core.Localization.Translations.BOOK_DELETED, AlertSeverity.Success);
+		NavigationManager.NavigateTo(Urls.Shelf);
+	}
+
+	private async Task LoadBook()
+	{
+		_authorName = null;
+		_seriesName = null;
+			
+		var getBook = await Sender.Send(new GetBook.Query {BookId = Id});
+		if (getBook.IsFailure)
+		{
+			return;
+		}
+		_book = getBook.Value;
+			
+		var getBookProgress = await Sender.Send(new GetBookProgressByProfile.Query(Id, _profileId));
+		_book.Progresses.Add(getBookProgress.Value);
+			
+		if (_book.Author != null)
+		{
+			_authorName = _book.Author.Name;
+		}
+		if (_book.Series != null)
+		{
+			_seriesName = _book.Series.Name;
+		}
+	}
+
+	private async Task UploadCoverToTempPath(IBrowserFile? file)
+	{
+		if (file == null) return;
+			
+		var tempPath = Path.Combine(Path.GetTempPath(), file.Name);
+		await using (var stream = new FileStream(tempPath, FileMode.Create))
+		{
+			await file.OpenReadStream(maxAllowedSize: 1024 * 30000).CopyToAsync(stream);
+		}
+		_newCoverTempPath = tempPath;
+	}
+
+	private async Task UploadEpubToTempPath(IBrowserFile? file)
+	{
+		if(file == null) return;
+			
+		var tempPath = Path.Combine(Path.GetTempPath(), file.Name);
+		await using (var stream = new FileStream(tempPath, FileMode.Create))
+		{
+			await file.OpenReadStream(maxAllowedSize: 1024 * 30000).CopyToAsync(stream);
+		}
+		_newEpubTempPath = tempPath;
+	}
+
+	private async Task Save()
+	{
+		if (!string.IsNullOrEmpty(_authorName))
+		{
+			if (_book.Author?.Name != _authorName)
+			{
+				var author = _authors.FirstOrDefault(a => a.Name == _authorName) ??
+				             new Author
+				             {
+					             Name = _authorName
+				             };
+				_book.AuthorId = author.AuthorId;
+				_book.Author = author;
+			}
+		}
+		else
+		{
+			_book.AuthorId = null;
+			_book.Author = null;
+		}
+
+		if (!string.IsNullOrEmpty(_seriesName))
+		{
+			if (_book.Series?.Name != _seriesName)
+			{
+				var series = _series.FirstOrDefault(a => a.Name == _seriesName) ??
+				             new Series
+				             {
+					             Name = _seriesName
+				             };
+				_book.SeriesId = series.SeriesId;
+				_book.Series = series;
+			}
+		}
+		else
+		{
+			_book.SeriesId = null;
+			_book.Series = null;
+		}
+
+		var updateBook = await Sender.Send(new UpdateBook.Command(_book, _newCoverTempPath, _newEpubTempPath));
+		if(updateBook.IsFailure)
+		{
+			throw new Exception(updateBook.Error.Description);
+		}
+		if(_book.Progress() is { EndDate: not null, Progress: < 100 })
+		{
+			_book.Progress().Progress = 100;
+		}
+		var updateProgress = await Sender.Send(new UpdateBookProgress.Command(_book.Progress()));
+		if(updateProgress.IsFailure)
+		{
+			throw new Exception(updateProgress.Error.Description);
+		}
+
+		await UpdateEpubFileMetadata();
+		await DisableEditing();
+	}
+
+	private async Task UpdateEpubFileMetadata()
+	{
+		var writer = EbookManagerProvider.GetWriter((Format)_book.Format);
+		if (writer is null) return;
+		var ebook = new Ebook
+		{
+			Title = _book.Title!,
+			Author = _book.Author?.Name!,
+			Publisher = _book.Publisher,
+			Synopsis = _book.Description,
+			Language = _book.Language ?? string.Empty,
+			PublishDate = _book.PublishedDate != null ? string.Concat(_book.PublishedDate.Value.ToString("s"), "Z") : null,
+			Series = _book.Series?.Name,
+			SeriesIndex = _book.SeriesIndex
+		};
+
+		await writer.ReplaceMetadataAsync(_book.EbookPath(), ebook);
+		if(_newCoverTempPath != null)
+		{
+			await writer.ReplaceCoverAsync(_book.EbookPath(), _book.CoverPath());
+		}
+	}
+
+	private async Task ShowFetchMetadataDialog()
+	{
+		var dialogParameters = new DialogParameters
+		{
+			{ nameof(FetchMetadataDialog.Title), _book.Title },
+			{ nameof(FetchMetadataDialog.Author), _authorName }
+		};
+		var dialog = await DialogService.ShowAsync<FetchMetadataDialog>(null, dialogParameters);
+		var result = await dialog.Result;
+		if (result is { Canceled: false, Data: BookMetadata metadata })
+		{
+			_book.Title = metadata.Title;
+			_authorName = metadata.Author ?? _authorName;
+			_book.Publisher = metadata.Publisher ?? _book.Publisher;
+			_book.PublishedDate = metadata.PublishedDate ?? _book.PublishedDate;
+			_book.ISBN10 = metadata.Isbn10 ?? _book.ISBN10;
+			_book.ISBN13 = metadata.Isbn13 ?? _book.ISBN13;
+			if(!string.IsNullOrWhiteSpace(metadata.Description)) _book.Description = metadata.Description;
+			StateHasChanged();
+		}
+	}
+
+	private async Task ShowFetchCoversDialog()
+	{
+		var dialogParameters = new DialogParameters
+		{
+			{ nameof(FetchCoversDialog.Title), _book.Title },
+			{ nameof(FetchCoversDialog.Author), _book.Author?.Name ?? string.Empty }
+		};
+		var dialog = await DialogService.ShowAsync<FetchCoversDialog>(null, dialogParameters);
+		var result = await dialog.Result;
+		if (result?.Canceled == false && !string.IsNullOrWhiteSpace(result.Data as string))
+		{
+			_newCoverTempPath = result.Data as string;
+			StateHasChanged();
+		}
+	}
+		
+	private async Task AddTagToBook()
+	{
+		if (string.IsNullOrEmpty(_tagNames))
+		{
+			return;
+		}
+		var addTags = await Sender.Send(new AddTagsToBook.Command(_tagNames, _book.BookId));
+		if (addTags.IsSuccess)
+		{
+			_book.Tags.AddRange(addTags.Value);
+			_tagNames = string.Empty;
+			_addingTags = false;
+		}
+	}
+		
+	private async Task RemoveTagFromBook(MudChip<string> mudChip)
+	{
+		var tagToRemove = _book.Tags.FirstOrDefault(t => t.TagId == ((Tag)mudChip.Tag!).TagId);
+		if (tagToRemove != null)
+		{
+			var removeTag = await Sender.Send(new RemoveTagFromBook.Command(tagToRemove.TagId, _book.BookId));
+			if (removeTag.IsSuccess)
+			{
+				_book.Tags.Remove(tagToRemove);
+			}
+			else
+			{
+				throw new Exception(removeTag.Error.Description);
+			}
+		}
+	}
+}

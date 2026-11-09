@@ -1,0 +1,43 @@
+﻿using BookHeaven.Core.Features.ProfileSettingss;
+using BookHeaven.Server.Features.Api.Abstractions;
+using Microsoft.AspNetCore.Mvc;
+
+namespace BookHeaven.Server.Features.Api.Endpoints.Profiles;
+
+public static class ApiUpdateProfileSettings
+{
+    public class Endpoint : IEndpoint
+    {
+        public void MapEndpoint(IEndpointRouteBuilder app)
+        {
+            app.MapPut("/profile/settings/update", ApiHandler)
+                .WithName("UpdateProfileSettings")
+                .WithSummary("Update profile settings.")
+                .WithDescription("This endpoint allows you to update the profile settings for a specific profile. " +
+                                 "If the profile has no settings, they will be created.")
+                .Produces(StatusCodes.Status200OK)
+                .ProducesProblem(StatusCodes.Status500InternalServerError)
+                .Accepts<ProfileSettings>("application/json")
+                .WithTags("Profiles");
+        }
+        
+        private static async Task<IResult> ApiHandler(
+            [FromBody] ProfileSettings profileSettings,
+            ISender sender,
+            ILogger<ApiGetAllProfiles.Endpoint> logger)
+        {
+            var existingSettings = await sender.Send(new GetProfileSettings.Query(profileSettings.ProfileId));
+            if (existingSettings.IsFailure)
+            {
+                await sender.Send(new AddProfileSettings.Command(profileSettings));
+            }
+            else
+            {
+                await sender.Send(new UpdateProfileSettings.Command(profileSettings));
+            }
+
+            return Results.Ok();
+        }
+        
+    }
+}

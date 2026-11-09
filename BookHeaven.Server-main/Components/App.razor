@@ -1,0 +1,62 @@
+﻿@using BookHeaven.Server.Features.Settings.Abstractions
+@using Microsoft.AspNetCore.Localization
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <ResourcePreloader/>
+    <link href="@Assets["_content/MudBlazor/MudBlazor.min.css"]" rel="stylesheet" />
+    <link rel="stylesheet" href="@Assets["css/app.min.css"]" />
+    <link rel="stylesheet" href="@Assets["BookHeaven.Server.styles.css"]" />
+    <link rel="icon" type="image/x-icon" href="img/logo.svg" />
+    <title>BookHeaven</title>
+    <ImportMap/>
+    <HeadOutlet @rendermode="@InteractiveServer" />
+</head>
+<body class="bg-[rgba(29,32,43,1)]">
+    <Routes @rendermode="new InteractiveServerRenderMode(prerender:false)"/>
+    <ReconnectModal/>
+    <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+    <script>
+        window.scrollToTop = () => {
+            let main = document.querySelector("main");
+            let path = window.location.pathname;
+            if (sessionStorage.getItem(path)) {
+                main.scrollTo({ top: parseInt(sessionStorage.getItem(path)) });
+                sessionStorage.removeItem(path);
+            }
+            else {
+                main.scrollTo({ top: 0 });
+            }
+        };
+        window.saveScrollPosition = (path) => {
+            let scrollY = document.querySelector("main")?.scrollTop;
+            if (scrollY > 0) {
+                sessionStorage.setItem(path, scrollY.toString());
+            }
+        }
+    </script>
+</body>
+
+</html>
+@code {
+    [Inject] ISettingsManagerService SettingsManager { get; set; } = null!;
+    
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpContext is null) return;
+        var culture = (await SettingsManager.LoadSettingsAsync()).Culture;
+        HttpContext?.Response.Cookies.Append(
+            CookieRequestCultureProvider.DefaultCookieName,
+            CookieRequestCultureProvider.MakeCookieValue(
+                new RequestCulture(
+                    culture,
+                    culture)));
+    }
+}

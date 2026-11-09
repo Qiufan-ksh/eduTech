@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SHELF" xml:space="preserve">
+    <value>Shelf</value>
+  </data>
+  <data name="AUTHORS" xml:space="preserve">
+    <value>Authors</value>
+  </data>
+  <data name="SERIES_PLURAL" xml:space="preserve">
+    <value>Series</value>
+  </data>
+  <data name="SETTINGS" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="AUTHOR" xml:space="preserve">
+    <value>Author</value>
+  </data>
+  <data name="PUBLISHED" xml:space="preserve">
+    <value>Publish Date</value>
+  </data>
+  <data name="DESCRIPTION" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="START_DATE" xml:space="preserve">
+    <value>Start Date</value>
+  </data>
+  <data name="PROGRESS" xml:space="preserve">
+    <value>Progress</value>
+  </data>
+  <data name="END_DATE" xml:space="preserve">
+    <value>End Date</value>
+  </data>
+  <data name="READ_TIME" xml:space="preserve">
+    <value>Read Time</value>
+  </data>
+  <data name="PUBLISHER" xml:space="preserve">
+    <value>Publisher</value>
+  </data>
+  <data name="TITLE" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="SERIES" xml:space="preserve">
+    <value>Series</value>
+  </data>
+  <data name="SERIES_INDEX" xml:space="preserve">
+    <value>Series Index</value>
+  </data>
+  <data name="BOOK" xml:space="preserve">
+    <value>Book</value>
+  </data>
+  <data name="ADD_COVER" xml:space="preserve">
+    <value>Add cover</value>
+  </data>
+  <data name="REPLACE_COVER" xml:space="preserve">
+    <value>Replace cover</value>
+  </data>
+  <data name="NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="BOOKS" xml:space="preserve">
+    <value>Books</value>
+  </data>
+  <data name="BOOKS_FROM" xml:space="preserve">
+    <value>Books from</value>
+  </data>
+  <data name="DOWNLOAD" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="EDIT" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="CANCEL" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="SAVE" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="GO_BACK" xml:space="preserve">
+    <value>Go back</value>
+  </data>
+  <data name="UPLOADING_BOOK" xml:space="preserve">
+    <value>Uploading book</value>
+  </data>
+  <data name="UPLOADING_BOOK_FAILED" xml:space="preserve">
+    <value>Failed to upload book</value>
+  </data>
+  <data name="LANGUAGE" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="DATE_FORMAT" xml:space="preserve">
+    <value>Date format</value>
+  </data>
+  <data name="LONG_DATE_FORMAT" xml:space="preserve">
+    <value>Long date format</value>
+  </data>
+  <data name="LAST_READ" xml:space="preserve">
+    <value>Last read</value>
+  </data>
+  <data name="SHELF_EMPTY" xml:space="preserve">
+    <value>Your shelf is empty</value>
+  </data>
+  <data name="SHELF_FILTER_NO_RESULTS" xml:space="preserve">
+    <value>No books matching the selected filter</value>
+  </data>
+  <data name="PROFILES" xml:space="preserve">
+    <value>Profiles</value>
+  </data>
+  <data name="PROFILES_MANAGE" xml:space="preserve">
+    <value>Manage profiles</value>
+  </data>
+  <data name="DONE" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="PROFILES_CREATE_FIRST" xml:space="preserve">
+    <value>Create your first profile</value>
+  </data>
+  <data name="PROFILES_SELECT" xml:space="preserve">
+    <value>Select your profile</value>
+  </data>
+  <data name="PROFILE_CREATE" xml:space="preserve">
+    <value>Create profile</value>
+  </data>
+  <data name="PROFILE_EDIT" xml:space="preserve">
+    <value>Edit profile</value>
+  </data>
+  <data name="PROFILE_DELETE_WARNING_MESSAGE" xml:space="preserve">
+    <value>Are you sure you want to delete this profile? You will lose all progress associated with it. This action cannot be undone.</value>
+  </data>
+  <data name="UPLOADING_BOOK_SUCCESS" xml:space="preserve">
+    <value>Book uploaded succesfully</value>
+  </data>
+  <data name="RECONNECT_MODAL_BUTTON_RECONNECT" xml:space="preserve">
+    <value>Refresh Page</value>
+  </data>
+  <data name="RECONNECT_MODAL_BUTTON_RESUME" xml:space="preserve">
+    <value>Resume Session</value>
+  </data>
+  <data name="RECONNECT_MODAL_INFO_RESUME_FAILED" xml:space="preserve">
+    <value>Reloading the page...</value>
+  </data>
+  <data name="RECONNECT_MODAL_INFO_RECONNECT_FAILED" xml:space="preserve">
+    <value>Connection could not be reestablished.&lt;br/&gt;Please refresh the page.</value>
+  </data>
+  <data name="RECONNECT_MODAL_INFO_RECONNECT" xml:space="preserve">
+    <value>Reconnecting with the server...</value>
+  </data>
+  <data name="RECONNECT_MODAL_INFO_PAUSE" xml:space="preserve">
+    <value>Session has been paused due to inactivity.</value>
+  </data>
+  <data name="RECONNECT_MODAL_INFO_RETRYING" xml:space="preserve">
+    <value>Connection failed... retrying in {0} seconds.</value>
+  </data>
+  <data name="AUTHOR_NOT_EMPTY" xml:space="preserve">
+    <value>Cannot delete author with associated books.</value>
+  </data>
+  <data name="DELETE_AUTHOR" xml:space="preserve">
+    <value>Delete Author</value>
+  </data>
+  <data name="DELETE_AUTHOR_CONFIRM_MESSAGE" xml:space="preserve">
+    <value>Are you sure you want to delete this author?</value>
+  </data>
+  <data name="CANNOT_BE_UNDONE" xml:space="preserve">
+    <value>This action cannot be undone.</value>
+  </data>
+  <data name="AUTHOR_DELETED" xml:space="preserve">
+    <value>Author deleted successfully.</value>
+  </data>
+  <data name="ACTIONS" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="NEW_SERIES" xml:space="preserve">
+    <value>New series</value>
+  </data>
+  <data name="SERIES_NAME_CANT_BE_EMPTY" xml:space="preserve">
+    <value>Series name cannot be empty</value>
+  </data>
+  <data name="DELETE_SERIES" xml:space="preserve">
+    <value>Delete Series</value>
+  </data>
+  <data name="DELETE_SERIES_CONFIRM_MESSAGE" xml:space="preserve">
+    <value>Are you sure you want to delete this Series?</value>
+  </data>
+</root>

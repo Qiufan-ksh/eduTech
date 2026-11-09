@@ -1,0 +1,7 @@
+﻿<SectionContent SectionName="TopBar">
+	@ChildContent
+</SectionContent>
+
+@code {
+	[Parameter] public RenderFragment ChildContent { get; set; } = null!;
+}

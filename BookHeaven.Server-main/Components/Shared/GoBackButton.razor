@@ -1,0 +1,21 @@
+﻿<MudTooltip Text="@Translations.GO_BACK">
+	<MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="GoBack" />
+</MudTooltip>
+@code {
+	[Inject] IJSRuntime JsRuntime { get; set; } = null!;
+	[Inject] NavigationManager NavigationManager { get; set; } = null!;
+	
+	[Parameter] public string? Url { get; set; }
+	
+	private async Task GoBack()
+	{
+		if (string.IsNullOrEmpty(Url))
+		{
+			await JsRuntime.InvokeVoidAsync("history.back");
+		}
+		else
+		{
+			NavigationManager.NavigateTo(Url);
+		}
+	}
+}

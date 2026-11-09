@@ -1,0 +1,89 @@
+﻿@if (IsLoading)
+{
+	<div class="@GridClasses">
+		@for(var i = 0; i < 20; i++)
+		{
+			<MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="370px" Animation="Animation.Pulse" Class="w-[170px] sm:w-[180px] rounded" />
+		}
+	</div>
+	return;
+}
+
+<VirtualGrid Items="Books" ContainerClass="@GridClasses">
+	<ItemTemplate>
+		<BookCard
+			@key="@context.BookId"
+			Book="context"
+			IsSelectMode="IsSelectMode"
+			IsSelected="SelectedBooks.Contains(context.BookId)"
+			IsInteractive="IsInteractive"
+			OnBookClicked="OnBookClicked"/>
+	</ItemTemplate>
+</VirtualGrid>
+
+
+@code {
+	[Inject] private NavigationManager NavigationManager { get; set; } = null!;
+
+	[Parameter] public List<Book> Books { get; set; } = [];
+	[Parameter] public bool IsLoading { get; set; }
+	[Parameter] public bool Center { get; set; }
+	[Parameter] public bool SingleRow { get; set; }
+	[Parameter] public bool IsInteractive { get; set; } = true;
+	[Parameter] public bool IsSelectMode { get; set; }
+	[Parameter] public List<Guid> SelectedBooks { get; set; } = [];
+	[Parameter] public EventCallback<List<Guid>> SelectedBooksChanged { get; set; }
+	
+	private Dictionary<Guid, int> _bookIndex = [];
+
+	protected override void OnParametersSet()
+	{
+		_bookIndex = Books.Select((b, i) => (b.BookId, i)).ToDictionary(x => x.BookId, x => x.i);
+	}
+
+	private string GridClasses =>
+		"grid gap-4 sm:gap-5 " + (
+		SingleRow
+			? "grid-flow-col grid-rows-1 overflow-x-auto auto-cols-[165px] sm:auto-cols-[180px] snap-x snap-mandatory py-5"
+			: $"grid-cols-[repeat(auto-fill,160px)] sm:grid-cols-[repeat(auto-fill,180px)] {(Center ? "justify-center" : "")}");
+
+	private void OnBookClicked((Guid bookId, bool shiftPressed) args)
+	{
+		if (IsSelectMode)
+		{
+			if (args.shiftPressed && SelectedBooks.Count > 0)
+			{
+				var lastSelected = SelectedBooks.LastOrDefault();
+				if (_bookIndex.TryGetValue(lastSelected, out var lastIndex) &&
+				    _bookIndex.TryGetValue(args.bookId, out var clickedIndex))
+				{
+					var start = Math.Min(lastIndex, clickedIndex);
+					var end = Math.Max(lastIndex, clickedIndex);
+					var deselect = SelectedBooks.Contains(args.bookId);
+					for (var i = start; i <= end; i++)
+					{
+						var id = Books[i].BookId;
+						if (deselect) SelectedBooks.Remove(id);
+						else SelectedBooks.Add(id);
+					}
+				}
+			}
+			else
+			{
+				if (SelectedBooks.Contains(args.bookId))
+				{
+					SelectedBooks.Remove(args.bookId);
+				}
+				else
+				{
+					SelectedBooks.Add(args.bookId);
+				}
+			}
+			SelectedBooksChanged.InvokeAsync(SelectedBooks);
+		}
+		else
+		{
+			NavigationManager.NavigateTo(Urls.GetBookUrl(args.bookId));
+		}
+	}
+}

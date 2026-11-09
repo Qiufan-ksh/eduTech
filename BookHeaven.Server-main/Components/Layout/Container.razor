@@ -1,0 +1,8 @@
+﻿<div class="container px-3 sm:p-0 mx-auto @Class">
+	@ChildContent
+</div>
+
+@code {
+	[Parameter] public RenderFragment ChildContent { get; set; } = null!;
+	[Parameter] public string? Class { get; set; }
+}

@@ -1,0 +1,126 @@
+﻿@using BookHeaven.Server.Features.Metadata.DTOs
+@using BookHeaven.Server.Features.Metadata.Factories
+@using BookHeaven.Server.Features.Settings.Abstractions
+@using BookHeaven.Server.Features.Settings.DTOs
+<MudDialog>
+	<DialogContent>
+		<div class="sticky top-0 py-3 mb-4 bg-(--mud-palette-surface) z-10">
+			<MudSelect 
+				@bind-Value="_metadataProvider"
+				@bind-Value:after="FetchMetadata"
+				Variant="Variant.Outlined"
+				Label="Metadata provider">
+				<MudSelectItem Value="MetadataProvidersFactory.MetadataProvider.GoogleBooks">Google books</MudSelectItem>
+				<MudSelectItem Value="MetadataProvidersFactory.MetadataProvider.OpenLibrary">Open library</MudSelectItem>
+			</MudSelect>
+		</div>
+		@if (!_isLoaded)
+		{
+			<div class="flex items-center justify-center">
+				<MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large"/>
+			</div>
+		}
+		else if (!string.IsNullOrWhiteSpace(_errorMessage))
+		{
+			<MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
+		}
+		else if (_metadataList.Count == 0)
+		{
+			<MudAlert Severity="Severity.Info">No metadata found for this book.</MudAlert>
+		}
+		else
+		{
+			<div class="flex flex-col p-2 gap-2 2xl:gap-5">
+				@foreach (var metadata in _metadataList)
+				{
+					<div class="p-3 bg-slate-700 hover:cursor-pointer active:scale-y-95 transition-all rounded @(_selectedMetadata == metadata ? "outline-2 outline-(--mud-palette-primary)" : "")" @onclick="() => _selectedMetadata = metadata">
+						<p class="text-xl">@metadata.Title</p>
+						<p class="text-lg mb-2">@metadata.Author</p>
+						<p>@metadata.Publisher</p>
+						@if (metadata.PublishedDate != null)
+						{
+							<p>@metadata.PublishedDate.Value.ToString(_settings.LongDateFormat)</p>
+						}
+						<div class="flex items-center flex-wrap my-2">
+							@if (!string.IsNullOrEmpty(metadata.Isbn10))
+							{
+								<MudChip T="MarkupString" Size="Size.Small" Color="Color.Primary">
+									ISBN-10: <span class="ms-1">@metadata.Isbn10</span>
+								</MudChip>
+							}
+							@if (!string.IsNullOrEmpty(metadata.Isbn13))
+							{
+								<MudChip T="MarkupString" Size="Size.Small" Color="Color.Primary">
+									ISBN-13: <span class="ms-1">@metadata.Isbn13</span>
+								</MudChip>
+							}
+						</div>
+						@if (!string.IsNullOrWhiteSpace(metadata.Description))
+						{
+							<p class="mt-4 text-neutral-300">@((MarkupString)metadata.Description)</p>
+						}
+					</div>
+				}
+			</div>
+		}
+	</DialogContent>
+	<DialogActions>
+		<MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="@(_selectedMetadata is null)" OnClick="@Apply">Apply</MudButton>
+	</DialogActions>
+</MudDialog>
+
+@code {
+	[Inject] private IDialogService DialogService { get; set; } = null!;
+	[Inject] private MetadataProvidersFactory MetadataProvidersFactory { get; set; } = null!;
+	[Inject] private ISettingsManagerService SettingsManager { get; set; } = null!;
+	
+	[CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+	[Parameter] public required string Title { get; set; }
+	[Parameter] public required string Author { get; set; }
+	
+	private readonly DialogOptions _options = new() { FullWidth = true, MaxWidth = MaxWidth.Large, CloseButton = true};
+	
+	private bool _isLoaded;
+	private MetadataProvidersFactory.MetadataProvider _metadataProvider = MetadataProvidersFactory.MetadataProvider.GoogleBooks;
+	private List<BookMetadata> _metadataList = [];
+	private string _errorMessage = string.Empty;
+	private ServerSettings _settings = new();
+	
+	private BookMetadata? _selectedMetadata;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await MudDialog.SetOptionsAsync(_options);
+		_settings = await SettingsManager.LoadSettingsAsync();
+		await FetchMetadata();
+	}
+	
+	private async Task FetchMetadata()
+	{
+		_errorMessage = string.Empty;
+		_isLoaded = false;
+		StateHasChanged();
+		_metadataList.Clear();
+		var provider = MetadataProvidersFactory.GetMetadataProvider(_metadataProvider)!;
+		var fetchData = await provider.GetMetadataAsync(new MetadataRequest(Title, Author));
+		if (fetchData.IsSuccess)
+		{
+			_metadataList = fetchData.Value;
+		}
+		else
+		{
+			_errorMessage = fetchData.Error.Description;
+		}
+		_isLoaded = true;
+		StateHasChanged();
+	}
+	
+	private void Apply()
+	{
+		if (_selectedMetadata != null)
+		{
+			MudDialog.Close(DialogResult.Ok(_selectedMetadata));
+		}
+	}
+
+}

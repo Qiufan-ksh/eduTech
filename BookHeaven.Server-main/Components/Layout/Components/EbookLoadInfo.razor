@@ -1,0 +1,113 @@
+﻿@using System.Threading
+@using BookHeaven.Server.Features.Files.Abstractions
+@using BookHeaven.Server.Features.Files.DTOs
+@using BookHeaven.Server.Features.Files.Enums
+@implements IDisposable
+@if (Total == 0)
+{
+	return;
+}
+
+<MudCard Elevation="3" Class="animate-slide-in-bottom animate-duration-100">
+	<MudCardContent>
+		<div class="flex items-center justify-between">
+			<span>Importing books...</span>
+			@if (Processed == Total)
+			{
+				<MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Medium"></MudIcon>
+			}
+			else
+			{
+				<MudProgressCircular Indeterminate="true" Size="Size.Small" Color="Color.Primary"></MudProgressCircular>
+			}
+		</div>
+		<div class="flex items-center justify-between mt-2">
+			<span>@Processed/@Total</span>
+			@if (Failed > 0)
+			{
+				<span class="text-red-400">@Failed failed</span>
+			}
+		</div>
+	</MudCardContent>
+</MudCard>
+
+@code {
+	[Inject] private IEbookLoadNotifier EbookLoadNotifier { get; set; } = null!;
+	
+	private readonly Dictionary<Guid, EbookLoadNotificationDto> _notifications = new();
+	private int Total => _notifications.Count;
+	private int Success => _notifications.Values.Count(n => n.Status == EbookLoadStatus.Success);
+	private int Failed => _notifications.Values.Count(n => n.Status == EbookLoadStatus.Failed);
+	private int Processed => Success + Failed;
+	
+	private CancellationTokenSource? _clearCts;
+	// Lock to protect concurrent access/disposal of _clearCts from different threads
+	private readonly object _ctsLock = new();
+
+	protected override void OnInitialized()
+	{
+		EbookLoadNotifier.OnNotificationPublished += OnNotification;
+	}
+
+	private void OnNotification(EbookLoadNotificationDto notification)
+	{
+		CancellationToken token;
+		lock (_ctsLock)
+		{
+			try
+			{
+				_clearCts?.Cancel();
+			}
+			catch
+			{
+				// ignore
+			}
+			_clearCts?.Dispose();
+			_clearCts = new CancellationTokenSource();
+			token = _clearCts.Token;
+		}
+
+		_ = InvokeAsync(() => {
+			_notifications[notification.ItemId] = notification;
+			StateHasChanged();
+
+			if (Processed == Total)
+			{
+				_ = DelayedClearAsync(token);
+			}
+		});
+	}
+
+	private async Task DelayedClearAsync(CancellationToken token)
+	{
+		try
+		{
+			await Task.Delay(TimeSpan.FromSeconds(5), token);
+		}
+		catch (OperationCanceledException)
+		{
+			return;
+		}
+
+		_notifications.Clear();
+		await InvokeAsync(StateHasChanged);
+	}
+
+	public void Dispose()
+	{
+		EbookLoadNotifier.OnNotificationPublished -= OnNotification;
+		lock (_ctsLock)
+		{
+			try
+			{
+				_clearCts?.Cancel();
+			}
+			catch
+			{
+				// ignore
+			}
+			_clearCts?.Dispose();
+			_clearCts = null;
+		}
+	}
+}
